@@ -22,6 +22,7 @@ const SHEETS = {
   R: ['Registres', ['codi', 'data', 'pes', 'cintura', 'imc', 'greix_pct', 'rca', 'energia_1a5', 'gana_1a5', 'son_1a5', 'observacions']],
   A: ['Aliments', ['codi', 'data', 'apat', 'aliment', 'grams', 'kcal', 'proteines_g', 'hidrats_g', 'greixos_g', 'fibra_g', 'sodi_mg']],
   Q: ['Questionari', ['codi', 'actualitzat', 'objectiu', 'alimentacio', 'condicions', 'ritme', 'dieta_recomanada', 'dieta_aplicada']],
+  V: ['Valoracio', ['codi', 'actualitzat', 'data', 'sus1', 'sus2', 'sus3', 'sus4', 'sus5', 'sus6', 'sus7', 'sus8', 'sus9', 'sus10', 'sus_puntuacio_0_100', 'entenc_millor_1a5', 'he_canviat_habits_1a5', 'la_recomanaria_1a5', 'comentari']],
   X: ['_raw', ['codi', 'actualitzat', 'parts'].concat(Array.from({ length: 20 }, (_, i) => 'json' + (i + 1)))],
 };
 const CHUNK = 45000;          // caràcters per cel·la (límit de Google: 50.000)
@@ -71,6 +72,7 @@ function sync(req, email) {
   sp.getRange(row, 8).setValue(now);
   if (req.dades) upsert(sheet('D'), codi, [codi, now].concat(req.dades));
   if (req.questionari) upsert(sheet('Q'), codi, [codi, now].concat(req.questionari));
+  if (req.valoracio) upsert(sheet('V'), codi, [codi, now].concat(req.valoracio));
   if (req.registres) replaceBlock(sheet('R'), codi, req.registres.map(r => [codi].concat(r)));
   if (req.aliments) replaceBlock(sheet('A'), codi, req.aliments.map(r => [codi].concat(r)));
   if (req.state) {
@@ -98,7 +100,7 @@ function remove(req, email) {
   if (!row) return { ok: true };
   const a = auth(row, req, email); if (a) return a;
   const codi = sp.getRange(row, 1).getValue();
-  ['D', 'Q', 'X'].forEach(k => { const sh = sheet(k); const r = findRow(sh, 1, codi); if (r) sh.deleteRow(r); });
+  ['D', 'Q', 'V', 'X'].forEach(k => { const sh = sheet(k); const r = findRow(sh, 1, codi); if (r) sh.deleteRow(r); });
   ['R', 'A'].forEach(k => replaceBlock(sheet(k), codi, []));
   sp.deleteRow(row);
   return { ok: true, deleted: codi };
@@ -119,8 +121,10 @@ function setup() {
     const ss = SpreadsheetApp.getActive();
     let sh = ss.getSheetByName(name);
     if (!sh) { sh = ss.insertSheet(name); sh.appendRow(head); sh.setFrozenRows(1); if (k === 'X') sh.hideSheet(); return; }
-    // si s'han afegit columnes en una versió nova, s'actualitza la capçalera
-    if (k !== 'X' && sh.getLastColumn() < head.length) sh.getRange(1, 1, 1, head.length).setValues([head]);
+    // si la capçalera no coincideix amb la d'aquesta versió (columnes noves), es reescriu
+    if (k === 'X') return;
+    const cur = sh.getRange(1, 1, 1, head.length).getValues()[0];
+    if (cur.join('|') !== head.join('|')) sh.getRange(1, 1, 1, head.length).setValues([head]);
   });
 }
 function sheet(k) { return SpreadsheetApp.getActive().getSheetByName(SHEETS[k][0]); }

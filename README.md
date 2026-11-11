@@ -20,6 +20,7 @@ Funciona com a pàgina estàtica a **GitHub Pages**, i les dades dels participan
   - *Adults (18–64)*: IMC de l'OMS + IMC adaptat del TREC (sexe, edat i complexió).
   - *65 anys o més*: rang d'IMC 22–26,9 (SEGG/SENPE); sense dieta per perdre pes si l'IMC és < 30; si hi ha obesitat, dèficit ≤ 500 kcal i mínim 1.200 kcal/dia (ESPEN).
   - Per a tothom: valoració del dèficit del TREC, despesa pel mètode del TREC (factors 1,2–1,9) en paral·lel per comparar, aigua segons l'EFSA i proteïna segons edat i esport.
+- **Valoració de l'app**: qüestionari SUS (*System Usability Scale*, 10 ítems, puntuació 0–100) + 3 preguntes d'utilitat i un comentari. Apareix al tauler després d'una setmana o de 3 registres, i sempre des del Perfil. Es guarda a la pestanya *Valoracio*.
 - **Menors de 14 anys**: en mode estudi cal el consentiment del pare, mare o tutor.
 
 ## Fitxers

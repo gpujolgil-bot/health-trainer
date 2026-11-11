@@ -641,7 +641,7 @@ function calc(d, opts = {}) {
    STORE — db (núvol, per usuari) + localStorage de reserva
    ========================================================= */
 const LS_KEY = 'ht2-state';
-const EMPTY_STATE = () => ({ profile: null, entries: [], history: [], food: {}, diets: [], prefs: {}, favs: [], plan: null, v: 2 });
+const EMPTY_STATE = () => ({ profile: null, entries: [], history: [], food: {}, diets: [], prefs: {}, favs: [], plan: null, valoracio: null, v: 2 });
 const ensureState = s => { const e = EMPTY_STATE(); for (const k in e) if (s[k] === undefined) s[k] = e[k]; return s; };
 const Store = {
   state: EMPTY_STATE(), mode: 'local', ref: null, writing: Promise.resolve(),
@@ -837,7 +837,7 @@ function dashHTML() {
   return `<div class="ph"><div><div class="eb">Tauler principal</div><h1>Hola, ${esc(p.nom || '')}</h1>
       <p>${m.franja === 'infant' ? 'Seguiment del creixement' : GOALS[p.objectiu].label}${p.pes_objectiu && p.objectiu !== 'mantenir' ? ` · ${n(p.pes_objectiu)} kg` : ''}${p.data_objectiu && p.objectiu !== 'mantenir' ? ` abans del ${fmtDate(p.data_objectiu)}` : ''}</p></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">${badge('green')}${badge('orange')}${badge('red')}</div></div>
-    ${hero}${nudge}${todayFoodStrip(m)}
+    ${hero}${nudge}${valoracioDue() ? `<div class="callout mint" style="margin-top:16px;align-items:center">${ic('message-circle', 20)}<div style="flex:1">Ja portes uns dies fent servir l'app. Ens dius què et sembla? Són 2 minuts.</div><button class="btn sm" data-act="valoracio">Valorar l'app</button></div>` : ''}${todayFoodStrip(m)}
     <div class="grid g2" style="margin-top:22px">${energyPanel(m, p)}${sportsPanel(m)}</div>
     <h2 style="margin:30px 0 14px;font-size:22px">Els teus indicadors</h2>
     ${metricsTabs(m, p)}
@@ -1027,6 +1027,9 @@ function profileHTML() {
         ${hist.map(h => `<tr><td>${fmtDate(h.date)}</td><td><span class="badge ${h.event === 'Nou objectiu' ? 'b-green' : 'b-info'}">${esc(h.event)}</span></td><td class="num">${n(h.pes)} kg</td><td>${GOALS[h.objectiu]?.label || ''}${h.pes_objectiu ? ` (${n(h.pes_objectiu)} kg)` : ''}</td><td class="num">${n(h.imc)}</td><td class="num">${n(h.greix)}%</td><td class="num">${n(h.kcal, 0)}</td></tr>`).join('')}
       </tbody></table></div>` : '<p class="faint small">Sense canvis registrats.</p>'}</div>
     ${studyPanelHTML()}
+    <div class="panel" style="margin-top:16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><h3 style="font-size:18px;margin-bottom:4px">Valoració de l'app</h3>
+      <p class="small muted" style="margin:0">${S().valoracio ? `L'has valorat el ${fmtDate(S().valoracio.date)}. Pots canviar les respostes quan vulguis.` : 'Encara no l\'has valorat. Són 13 preguntes ràpides i un comentari opcional.'}</p></div>
+      <button class="btn sm ${S().valoracio ? 'ghost' : ''}" data-act="valoracio">${S().valoracio ? 'Editar la valoració' : 'Valorar l\'app'}</button></div>
     <div class="panel" style="margin-top:16px"><h3 style="font-size:18px;margin-bottom:6px">Les teves dades</h3>
       <p class="small muted" style="margin:0 0 14px">${S().participant && CFG.endpoint ? 'Es desen en aquest dispositiu i s\'envien al centre per a l\'estudi.' : Store.mode === 'cloud' ? 'Es desen al teu compte i només les veus tu.' : 'Es desen en aquest navegador.'}</p>
       <div class="confirm">${ui.confirmDel
@@ -1367,6 +1370,55 @@ function saveCheckin() {
 }
 
 /* =========================================================
+   VALORACIÓ DE L'APP — System Usability Scale (Brooke, 1996) + utilitat percebuda
+   ========================================================= */
+const SUS = [
+  'Crec que m\'agradaria fer servir aquesta app sovint.',
+  'He trobat l\'app innecessàriament complicada.',
+  'M\'ha semblat fàcil de fer servir.',
+  'Crec que necessitaria l\'ajuda d\'una persona amb coneixements tècnics per poder-la fer servir.',
+  'Les diferents funcions de l\'app estan ben integrades.',
+  'He trobat massa incoherències a l\'app.',
+  'Crec que la majoria de gent aprendria a fer-la servir molt ràpidament.',
+  'L\'he trobada molt feixuga de fer servir.',
+  'M\'he sentit segur/a fent-la servir.',
+  'He hagut d\'aprendre moltes coses abans de poder-la fer servir.',
+];
+const VAL_EXTRA = [['entendre', 'Ara entenc millor el meu cos i la meva alimentació.'], ['habits', 'He canviat algun hàbit gràcies a l\'app.'], ['recomanar', 'Recomanaria l\'app a algú.']];
+// Puntuació SUS (0-100): ítems senars = valor − 1; parells = 5 − valor; suma × 2,5
+const susScore = a => a.every(Boolean) ? a.reduce((t, v, i) => t + (i % 2 === 0 ? v - 1 : 5 - v), 0) * 2.5 : null;
+const VA = { step: 0, d: null };
+function openValoracio() { const v = S().valoracio; VA.step = 0; VA.d = v ? clone(v) : { sus: Array(10).fill(0), extra: {}, obs: '' }; renderValoracio(); }
+function closeValoracio() { const el = $('#va-ov'); if (el) el.remove(); }
+function valScale(k, label, cur) {
+  return `<div class="sub-q" style="margin-top:18px;font-weight:500;line-height:1.4">${esc(label)}</div><div class="scale" role="radiogroup" aria-label="${esc(label)}">${[1, 2, 3, 4, 5].map(v => `<button class="${cur === v ? 'on' : ''}" data-act="va-pick" data-k="${k}" data-v="${v}" aria-pressed="${cur === v}">${v}</button>`).join('')}</div><div class="scale-l"><span>Gens d'acord</span><span>Totalment d'acord</span></div>`;
+}
+function renderValoracio() {
+  let ov = $('#va-ov');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'va-ov'; ov.className = 'ov'; document.body.appendChild(ov); ov.addEventListener('click', e => { if (e.target === ov) closeValoracio(); }); }
+  const d = VA.d;
+  const steps = [
+    { q: 'Què et sembla l\'app?', html: `<p class="small muted" style="margin:0">Són 2 minuts. Respon amb sinceritat: les respostes s'analitzen al Treball de Recerca.</p>` + SUS.slice(0, 5).map((t, i) => valScale('s' + i, t, d.sus[i])).join(''), ok: () => d.sus.slice(0, 5).every(Boolean) },
+    { q: 'Què et sembla l\'app?', html: SUS.slice(5).map((t, i) => valScale('s' + (i + 5), t, d.sus[i + 5])).join(''), ok: () => d.sus.slice(5).every(Boolean) },
+    { q: 'I per acabar', html: VAL_EXTRA.map(([k, t]) => valScale('e' + k, t, d.extra[k])).join('') + `<textarea class="txt" id="vaobs" placeholder="Què milloraries o què t'ha agradat més? (opcional)" style="margin-top:18px">${esc(d.obs || '')}</textarea>`, ok: () => VAL_EXTRA.every(([k]) => d.extra[k]) },
+  ];
+  const st = steps[VA.step], last = VA.step === steps.length - 1;
+  ov.innerHTML = `<div class="modal" style="max-width:560px"><div class="mh"><div class="dots">${steps.map((_, i) => `<i class="${i <= VA.step ? 'on' : ''}"></i>`).join('')}</div><button class="wz-close" data-act="va-close" aria-label="Tancar">${ic('x', 20)}</button></div>
+    <div class="mb"><h2 class="wz-q">${st.q} <span class="muted" style="font-size:.6em;font-weight:500">${VA.step + 1}/${steps.length}</span></h2>${st.html}</div>
+    <div class="mf">${VA.step > 0 ? `<button class="btn ghost" data-act="va-back">← Enrere</button>` : '<span></span>'}
+      <button class="btn" data-act="${last ? 'va-save' : 'va-next'}" ${st.ok() ? '' : 'disabled'}>${last ? 'Enviar valoració' : 'Següent'}</button></div></div>`;
+}
+function saveValoracio() {
+  const d = VA.d; d.obs = ($('#vaobs')?.value || '').trim(); d.date = todayStr(); d.score = susScore(d.sus);
+  S().valoracio = d; Store.save(); closeValoracio(); render(); toast('Gràcies per valorar l\'app!');
+}
+function valoracioDue() {
+  if (S().valoracio || !S().profile) return false;
+  const start = S().profile.data_inicial || S().history[0]?.date;
+  return S().entries.length >= 3 || (start && (ts(todayStr()) - ts(start)) / DAY >= 7);
+}
+
+/* =========================================================
    DEMO
    ========================================================= */
 function loadDemo() {
@@ -1408,6 +1460,12 @@ document.addEventListener('click', e => {
     case 'demo': loadDemo(); break;
     case 'edit': e.preventDefault(); openWizard(b.dataset.step, true); break;
     case 'checkin': openCheckin(); break;
+    case 'valoracio': openValoracio(); break;
+    case 'va-close': closeValoracio(); break;
+    case 'va-next': VA.step++; renderValoracio(); $('#va-ov .mb')?.scrollTo?.(0, 0); break;
+    case 'va-back': VA.step--; renderValoracio(); break;
+    case 'va-save': saveValoracio(); break;
+    case 'va-pick': { const k = b.dataset.k, v = +b.dataset.v; if (k[0] === 's') VA.d.sus[+k.slice(1)] = v; else VA.d.extra[k.slice(1)] = v; VA.d.obs = $('#vaobs')?.value ?? VA.d.obs; const sc = $('#va-ov .mb')?.scrollTop || 0; renderValoracio(); const mb = $('#va-ov .mb'); if (mb) mb.scrollTop = sc; break; }
     case 'tab': ui.tab = b.dataset.tab; render(); break;
     case 'range': ui.range = b.dataset.r; render(); break;
     case 'del-entry': {
@@ -2126,6 +2184,7 @@ function studyPayload(isNew) {
     body.aliments = [];
     Object.keys(st.food).sort().forEach(d => st.food[d].forEach(it => { const r = FOODS[it[1]]; if (!r) return; const nn = nut(it[1], it[2]); body.aliments.push([d, MEALS[it[0]]?.label || '', r[0], it[2], rr(nn.kcal, 0), rr(nn.p), rr(nn.h), rr(nn.g), rr(nn.fib), rr(nn.na, 0)]); }));
   }
+  if (st.valoracio) { const v = st.valoracio; body.valoracio = [v.date || '', ...v.sus, v.score ?? '', ...VAL_EXTRA.map(([k]) => v.extra[k] ?? ''), v.obs || '']; }
   if (st.dietQuiz) { const q = st.dietQuiz; let rec = ''; try { rec = recommendDiets(q).ranked[0] || ''; } catch (e) {} body.questionari = [q.goal || '', q.meat || '', (q.cond || []).join(', '), q.rhythm || '', rec, (st.prefs || {}).dieta || '']; }
   body.state = JSON.stringify(st);
   return body;
