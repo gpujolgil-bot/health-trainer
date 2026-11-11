@@ -17,7 +17,8 @@
 
 const SHEETS = {
   P: ['Participants', ['codi', 'email', 'nom', 'pin_hash', 'alta', 'consentiment', 'text_consentiment', 'actualitzat']],
-  D: ['Dades', ['codi', 'actualitzat', 'sexe', 'edat', 'alcada_cm', 'complexio', 'activitat', 'objectiu', 'pes_inicial', 'data_inicial', 'pes_actual', 'pes_objectiu', 'data_objectiu', 'cintura_cm', 'imc', 'greix_pct', 'rca', 'metabolisme_basal', 'despesa_total', 'kcal_objectiu', 'proteina_g', 'esport_h_setmana', 'esport_kcal_setmana', 'esports', 'estil_dieta', 'n_registres_pes', 'n_dies_amb_aliments']],
+  D: ['Dades', ['codi', 'actualitzat', 'sexe', 'edat', 'alcada_cm', 'complexio', 'activitat', 'objectiu', 'pes_inicial', 'data_inicial', 'pes_actual', 'pes_objectiu', 'data_objectiu', 'cintura_cm', 'imc', 'greix_pct', 'rca', 'metabolisme_basal', 'despesa_total', 'kcal_objectiu', 'proteina_g', 'esport_h_setmana', 'esport_kcal_setmana', 'esports', 'estil_dieta', 'n_registres_pes', 'n_dies_amb_aliments',
+    'franja_edat', 'imc_categoria', 'imc_z_oms', 'pes_saludable_min', 'pes_saludable_max', 'metode_greix', 'metode_metabolisme', 'deficit_demanat_kcal', 'deficit_aplicat_kcal', 'valoracio_deficit', 'valoracio_objectiu', 'ritme_pct_setmana', 'nivell_activitat_trec', 'factor_trec', 'despesa_trec', 'aigua_l', 'mesures', 'consentiment_tutor']],
   R: ['Registres', ['codi', 'data', 'pes', 'cintura', 'imc', 'greix_pct', 'rca', 'energia_1a5', 'gana_1a5', 'son_1a5', 'observacions']],
   A: ['Aliments', ['codi', 'data', 'apat', 'aliment', 'grams', 'kcal', 'proteines_g', 'hidrats_g', 'greixos_g', 'fibra_g', 'sodi_mg']],
   Q: ['Questionari', ['codi', 'actualitzat', 'objectiu', 'alimentacio', 'condicions', 'ritme', 'dieta_recomanada', 'dieta_aplicada']],
@@ -117,7 +118,9 @@ function setup() {
     const [name, head] = SHEETS[k];
     const ss = SpreadsheetApp.getActive();
     let sh = ss.getSheetByName(name);
-    if (!sh) { sh = ss.insertSheet(name); sh.appendRow(head); sh.setFrozenRows(1); if (k === 'X') sh.hideSheet(); }
+    if (!sh) { sh = ss.insertSheet(name); sh.appendRow(head); sh.setFrozenRows(1); if (k === 'X') sh.hideSheet(); return; }
+    // si s'han afegit columnes en una versió nova, s'actualitza la capçalera
+    if (k !== 'X' && sh.getLastColumn() < head.length) sh.getRange(1, 1, 1, head.length).setValues([head]);
   });
 }
 function sheet(k) { return SpreadsheetApp.getActive().getSheetByName(SHEETS[k][0]); }

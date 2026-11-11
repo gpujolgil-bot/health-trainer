@@ -459,6 +459,11 @@ const COMPLEX = {
   robusta: { label: 'Constitució gran', desc: 'Els dits no arriben a tocar-se.' },
 };
 const SEX = { home: 'Home', dona: 'Dona' };
+const MESURES = {
+  mesurat: { label: 'Mesurat ara', em: 'ruler', desc: 'Amb bàscula i cinta mètrica.' },
+  bascula: { label: 'Pes amb bàscula', em: 'scale', desc: 'L\'alçada o la cintura són aproximades.' },
+  aprox: { label: 'De memòria', em: 'message-circle', desc: 'Valors aproximats, sense mesurar.' },
+};
 const STATUS = {
   green: { label: 'Saludable', cls: 'b-green', col: '#2F8F4E' },
   orange: { label: 'Vigilar', cls: 'b-orange', col: '#C27A12' },
@@ -474,42 +479,95 @@ function sportKcal(e, pes) { // kcal nets per setmana (MET − 1 per no duplicar
   const met = s.met * (INTENS[e.intensitat]?.mult || 1);
   return Math.max(0, met - 1) * pes * (e.dies * e.minuts / 60);
 }
-function fatRange(sexe, edat) { // Gallagher et al. 2000 (aprox.)
+const WHO_BMI = {"home":[[-0.7151,15.2679,0.08366],[-0.7387,15.2641,0.0839],[-0.7621,15.2616,0.08414],[-0.7856,15.2604,0.08439],[-0.8089,15.2605,0.08464],[-0.8322,15.2619,0.0849],[-0.8554,15.2645,0.08516],[-0.8785,15.2684,0.08543],[-0.9015,15.2737,0.0857],[-0.9243,15.2801,0.08597],[-0.9471,15.2877,0.08625],[-0.9697,15.2965,0.08653],[-0.9921,15.3062,0.08682],[-1.0144,15.3169,0.08711],[-1.0365,15.3285,0.08741],[-1.0584,15.3408,0.08771],[-1.0801,15.354,0.08802],[-1.1017,15.3679,0.08833],[-1.123,15.3825,0.08865],[-1.1441,15.3978,0.08898],[-1.1649,15.4137,0.08931],[-1.1856,15.4302,0.08964],[-1.206,15.4473,0.08998],[-1.2261,15.465,0.09033],[-1.246,15.4832,0.09068],[-1.2656,15.5019,0.09103],[-1.2849,15.521,0.09139],[-1.304,15.5407,0.09176],[-1.3228,15.5608,0.09213],[-1.3414,15.5814,0.09251],[-1.3596,15.6023,0.09289],[-1.3776,15.6237,0.09327],[-1.3953,15.6455,0.09366],[-1.4126,15.6677,0.09406],[-1.4297,15.6903,0.09445],[-1.4464,15.7133,0.09486],[-1.4629,15.7368,0.09526],[-1.479,15.7606,0.09567],[-1.4947,15.7848,0.09609],[-1.5101,15.8094,0.09651],[-1.5252,15.8344,0.09693],[-1.5399,15.8597,0.09735],[-1.5542,15.8855,0.09778],[-1.5681,15.9116,0.09821],[-1.5817,15.9381,0.09864],[-1.5948,15.9651,0.09907],[-1.6076,15.9925,0.09951],[-1.6199,16.0205,0.09994],[-1.6318,16.049,0.10038],[-1.6433,16.0781,0.10082],[-1.6544,16.1078,0.10126],[-1.6651,16.1381,0.1017],[-1.6753,16.1692,0.10214],[-1.6851,16.2009,0.10259],[-1.6944,16.2333,0.10303],[-1.7032,16.2665,0.10347],[-1.7116,16.3004,0.10391],[-1.7196,16.3351,0.10435],[-1.7271,16.3704,0.10478],[-1.7341,16.4065,0.10522],[-1.7407,16.4433,0.10566],[-1.7468,16.4807,0.10609],[-1.7525,16.5189,0.10652],[-1.7578,16.5578,0.10695],[-1.7626,16.5974,0.10738],[-1.767,16.6376,0.1078],[-1.771,16.6786,0.10823],[-1.7745,16.7203,0.10865],[-1.7777,16.7628,0.10906],[-1.7804,16.8059,0.10948],[-1.7828,16.8497,0.10989],[-1.7847,16.8941,0.1103],[-1.7862,16.9392,0.1107],[-1.7873,16.985,0.1111],[-1.7881,17.0314,0.1115],[-1.7884,17.0784,0.11189],[-1.7884,17.1262,0.11228],[-1.788,17.1746,0.11266],[-1.7873,17.2236,0.11304],[-1.7861,17.2734,0.11342],[-1.7846,17.324,0.11379],[-1.7828,17.3752,0.11415],[-1.7806,17.4272,0.11451],[-1.778,17.4799,0.11487],[-1.7751,17.5334,0.11522],[-1.7719,17.5877,0.11556],[-1.7684,17.6427,0.1159],[-1.7645,17.6985,0.11623],[-1.7604,17.7551,0.11656],[-1.7559,17.8124,0.11688],[-1.7511,17.8704,0.1172],[-1.7461,17.9292,0.11751],[-1.7408,17.9887,0.11781],[-1.7352,18.0488,0.11811],[-1.7293,18.1096,0.11841],[-1.7232,18.171,0.11869],[-1.7168,18.233,0.11898],[-1.7102,18.2955,0.11925],[-1.7033,18.3586,0.11952],[-1.6962,18.4221,0.11979],[-1.6888,18.486,0.12005],[-1.6811,18.5502,0.1203],[-1.6732,18.6148,0.12055],[-1.6651,18.6795,0.12079],[-1.6568,18.7445,0.12102],[-1.6482,18.8095,0.12125],[-1.6394,18.8746,0.12148],[-1.6304,18.9398,0.1217],[-1.6211,19.005,0.12191],[-1.6116,19.0701,0.12212],[-1.602,19.1351,0.12233],[-1.5921,19.2,0.12253],[-1.5821,19.2648,0.12272],[-1.5719,19.3294,0.12291],[-1.5615,19.3937,0.1231],[-1.551,19.4578,0.12328],[-1.5403,19.5217,0.12346],[-1.5294,19.5853,0.12363],[-1.5185,19.6486,0.1238],[-1.5074,19.7117,0.12396],[-1.4961,19.7744,0.12412],[-1.4848,19.8367,0.12428],[-1.4733,19.8987,0.12443],[-1.4617,19.9603,0.12458],[-1.45,20.0215,0.12473],[-1.4382,20.0823,0.12487],[-1.4263,20.1427,0.12501],[-1.4143,20.2026,0.12514],[-1.4022,20.2621,0.12528],[-1.39,20.3211,0.12541],[-1.3777,20.3796,0.12554],[-1.3653,20.4376,0.12567],[-1.3529,20.4951,0.12579],[-1.3403,20.5521,0.12591],[-1.3277,20.6085,0.12603],[-1.3149,20.6644,0.12615],[-1.3021,20.7197,0.12627],[-1.2892,20.7745,0.12638],[-1.2762,20.8287,0.1265],[-1.2631,20.8824,0.12661],[-1.2499,20.9355,0.12672],[-1.2366,20.9881,0.12683],[-1.2233,21.04,0.12694],[-1.2098,21.0914,0.12704],[-1.1962,21.1423,0.12715],[-1.1826,21.1925,0.12726],[-1.1688,21.2423,0.12736],[-1.155,21.2914,0.12746],[-1.141,21.34,0.12756],[-1.127,21.388,0.12767],[-1.1129,21.4354,0.12777],[-1.0986,21.4822,0.12787],[-1.0843,21.5285,0.12797],[-1.0699,21.5742,0.12807],[-1.0553,21.6193,0.12816],[-1.0407,21.6638,0.12826],[-1.026,21.7077,0.12836],[-1.0112,21.751,0.12845],[-0.9962,21.7937,0.12855],[-0.9812,21.8358,0.12864],[-0.9661,21.8773,0.12874],[-0.9509,21.9182,0.12883],[-0.9356,21.9585,0.12893],[-0.9202,21.9982,0.12902],[-0.9048,22.0374,0.12911],[-0.8892,22.076,0.1292],[-0.8735,22.114,0.1293],[-0.8578,22.1514,0.12939],[-0.8419,22.1883,0.12948]],"dona":[[-0.8702,15.2453,0.09646],[-0.8886,15.2441,0.09692],[-0.9068,15.2434,0.09738],[-0.9248,15.2433,0.09783],[-0.9427,15.2438,0.09829],[-0.9605,15.2448,0.09875],[-0.978,15.2464,0.0992],[-0.9954,15.2487,0.09966],[-1.0126,15.2516,0.10012],[-1.0296,15.2551,0.10058],[-1.0464,15.2592,0.10104],[-1.063,15.2641,0.10149],[-1.0794,15.2697,0.10195],[-1.0956,15.276,0.10241],[-1.1115,15.2831,0.10287],[-1.1272,15.2911,0.10333],[-1.1427,15.2998,0.10379],[-1.1579,15.3095,0.10425],[-1.1728,15.32,0.10471],[-1.1875,15.3314,0.10517],[-1.2019,15.3439,0.10562],[-1.216,15.3572,0.10608],[-1.2298,15.3717,0.10654],[-1.2433,15.3871,0.107],[-1.2565,15.4036,0.10746],[-1.2693,15.4211,0.10792],[-1.2819,15.4397,0.10837],[-1.2941,15.4593,0.10883],[-1.306,15.4798,0.10929],[-1.3175,15.5014,0.10974],[-1.3287,15.524,0.1102],[-1.3395,15.5476,0.11065],[-1.3499,15.5723,0.1111],[-1.36,15.5979,0.11156],[-1.3697,15.6246,0.11201],[-1.379,15.6523,0.11246],[-1.388,15.681,0.11291],[-1.3966,15.7107,0.11335],[-1.4047,15.7415,0.1138],[-1.4125,15.7732,0.11424],[-1.4199,15.8058,0.11469],[-1.427,15.8394,0.11513],[-1.4336,15.8738,0.11557],[-1.4398,15.909,0.11601],[-1.4456,15.9451,0.11644],[-1.4511,15.9818,0.11688],[-1.4561,16.0194,0.11731],[-1.4607,16.0575,0.11774],[-1.465,16.0964,0.11816],[-1.4688,16.1358,0.11859],[-1.4723,16.1759,0.11901],[-1.4753,16.2166,0.11943],[-1.478,16.258,0.11985],[-1.4803,16.2999,0.12026],[-1.4823,16.3425,0.12067],[-1.4838,16.3858,0.12108],[-1.485,16.4298,0.12148],[-1.4859,16.4746,0.12188],[-1.4864,16.52,0.12228],[-1.4866,16.5663,0.12268],[-1.4864,16.6133,0.12307],[-1.4859,16.6612,0.12346],[-1.4851,16.71,0.12384],[-1.4839,16.7595,0.12422],[-1.4825,16.81,0.1246],[-1.4807,16.8614,0.12497],[-1.4787,16.9136,0.12534],[-1.4763,16.9667,0.12571],[-1.4737,17.0208,0.12607],[-1.4708,17.0757,0.12643],[-1.4677,17.1316,0.12678],[-1.4642,17.1883,0.12713],[-1.4606,17.2459,0.12748],[-1.4567,17.3044,0.12782],[-1.4526,17.3637,0.12816],[-1.4482,17.4238,0.12849],[-1.4436,17.4847,0.12882],[-1.4389,17.5464,0.12914],[-1.4339,17.6088,0.12946],[-1.4288,17.6719,0.12978],[-1.4235,17.7357,0.13009],[-1.418,17.8001,0.1304],[-1.4123,17.8651,0.1307],[-1.4065,17.9306,0.13099],[-1.4006,17.9966,0.13129],[-1.3945,18.063,0.13158],[-1.3883,18.1297,0.13186],[-1.3819,18.1967,0.13214],[-1.3755,18.2639,0.13241],[-1.3689,18.3312,0.13268],[-1.3621,18.3986,0.13295],[-1.3553,18.466,0.13321],[-1.3483,18.5333,0.13347],[-1.3413,18.6006,0.13372],[-1.3341,18.6677,0.13397],[-1.3269,18.7346,0.13421],[-1.3195,18.8012,0.13445],[-1.3121,18.8675,0.13469],[-1.3046,18.9335,0.13492],[-1.297,18.9991,0.13514],[-1.2894,19.0642,0.13537],[-1.2816,19.1289,0.13559],[-1.2739,19.1931,0.1358],[-1.2661,19.2567,0.13601],[-1.2583,19.3197,0.13622],[-1.2504,19.382,0.13642],[-1.2425,19.4437,0.13662],[-1.2345,19.5045,0.13681],[-1.2266,19.5647,0.137],[-1.2186,19.624,0.13719],[-1.2107,19.6824,0.13738],[-1.2027,19.74,0.13756],[-1.1947,19.7966,0.13774],[-1.1867,19.8523,0.13791],[-1.1788,19.907,0.13808],[-1.1708,19.9607,0.13825],[-1.1629,20.0133,0.13841],[-1.1549,20.0648,0.13858],[-1.147,20.1152,0.13873],[-1.139,20.1644,0.13889],[-1.1311,20.2125,0.13904],[-1.1232,20.2595,0.1392],[-1.1153,20.3053,0.13934],[-1.1074,20.3499,0.13949],[-1.0996,20.3934,0.13963],[-1.0917,20.4357,0.13977],[-1.0838,20.4769,0.13991],[-1.076,20.517,0.14005],[-1.0681,20.556,0.14018],[-1.0603,20.5938,0.14031],[-1.0525,20.6306,0.14044],[-1.0447,20.6663,0.14057],[-1.0368,20.7008,0.1407],[-1.029,20.7344,0.14082],[-1.0212,20.7668,0.14094],[-1.0134,20.7982,0.14106],[-1.0055,20.8286,0.14118],[-0.9977,20.858,0.1413],[-0.9898,20.8863,0.14142],[-0.9819,20.9137,0.14153],[-0.974,20.9401,0.14164],[-0.9661,20.9656,0.14176],[-0.9582,20.9901,0.14187],[-0.9503,21.0138,0.14198],[-0.9423,21.0367,0.14208],[-0.9344,21.0587,0.14219],[-0.9264,21.0801,0.1423],[-0.9184,21.1007,0.1424],[-0.9104,21.1206,0.1425],[-0.9024,21.1399,0.14261],[-0.8944,21.1586,0.14271],[-0.8863,21.1768,0.14281],[-0.8783,21.1944,0.14291],[-0.8703,21.2116,0.14301],[-0.8623,21.2282,0.14311],[-0.8542,21.2444,0.1432],[-0.8462,21.2603,0.1433],[-0.8382,21.2757,0.1434],[-0.8301,21.2908,0.14349],[-0.8221,21.3055,0.14359],[-0.814,21.32,0.14368],[-0.806,21.3341,0.14377],[-0.798,21.348,0.14386],[-0.7899,21.3617,0.14396],[-0.7819,21.3752,0.14405],[-0.7738,21.3884,0.14414],[-0.7658,21.4014,0.14423],[-0.7577,21.4143,0.14432],[-0.7496,21.4269,0.14441]]}; // OMS 2007, IMC per edat 5-19 anys (L,M,S per mes des dels 60 mesos)
+// Franges d'edat: infant (<12), adolescent (12-17), adult (18-64), gran (65+)
+const franja = e => !e ? null : e < 12 ? 'infant' : e < 18 ? 'adolescent' : e < 65 ? 'adult' : 'gran';
+const FRANJA = { infant: 'Infant (6–11)', adolescent: 'Adolescent (12–17)', adult: 'Adult (18–64)', gran: '65 anys o més' };
+// IMC per edat (OMS 2007, 5-19 anys). L'edat en anys es pren a meitat d'any (edat + 6 mesos).
+function whoLMS(sexe, edat) { const t = WHO_BMI[sexe]; if (!t) return null; return t[clamp(Math.round(edat * 12 + 6), 60, 228) - 60]; }
+function bmiZ(imc, sexe, edat) { const r = whoLMS(sexe, edat); if (!r) return null; const [L, M, S] = r; return (Math.pow(imc / M, L) - 1) / (L * S); }
+function bmiAtZ(z, sexe, edat) { const [L, M, S] = whoLMS(sexe, edat); return M * Math.pow(1 + L * S * z, 1 / L); }
+function normCdf(z) { const t = 1 / (1 + 0.2316419 * Math.abs(z)); const d = 0.3989423 * Math.exp(-z * z / 2); const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return z > 0 ? 1 - p : p; }
+function fatRange(sexe, edat) { // Gallagher et al. 2000 (adults 20-79, aprox.)
   const t = sexe === 'home'
     ? (edat < 40 ? [8, 19] : edat < 60 ? [11, 21] : [13, 24])
     : (edat < 40 ? [21, 32] : edat < 60 ? [23, 33] : [24, 35]);
   return { min: t[0], max: t[1], risc: t[1] + 6 };
 }
+// Nivell d'activitat del TREC (factors 1,2-1,9), deduït del qüestionari per poder comparar mètodes
+function trecLevel(d) {
+  const ses = (d.fa_esport ? d.esports || [] : []).reduce((a, e) => a + (+e.dies || 0), 0);
+  if (d.activitat === 'molt' && ses >= 5) return { id: 'extrem', label: 'Extremadament actiu', factor: 1.9 };
+  if (ses >= 6 || (d.activitat === 'molt' && ses >= 3)) return { id: 'molt', label: 'Molt actiu', factor: 1.725 };
+  if (ses >= 3) return { id: 'moderat', label: 'Moderadament actiu', factor: 1.55 };
+  if (ses >= 1 || d.activitat === 'actiu' || d.activitat === 'molt') return { id: 'lleuger', label: 'Lleugerament actiu', factor: 1.375 };
+  return { id: 'sedentari', label: 'Sedentari', factor: 1.2 };
+}
+const DEFICIT_VAL = def => def < 300 ? { label: 'Molt conservador', status: 'green' } : def <= 600 ? { label: 'Raonable', status: 'green' } : def <= 1000 ? { label: 'Exigent', status: 'orange' } : { label: 'Excessiu', status: 'red' };
 function calc(d, opts = {}) {
   const m = {};
   const pes = +opts.pes || +d.pes || null;
   const cintura = +opts.cintura || +d.cintura || null;
   const alc = +d.alcada || null, edat = +d.edat || null;
+  const fr = franja(edat); m.franja = fr;
+  const home = d.sexe === 'home';
   m.pes = pes;
   if (alc && pes) {
-    const h = alc / 100;
-    const imc = pes / (h * h);
-    m.imc = { value: imc, status: imc < 18.5 ? 'orange' : imc < 25 ? 'green' : imc < 30 ? 'orange' : 'red',
-      label: imc < 18.5 ? 'Pes baix' : imc < 25 ? 'Normopès' : imc < 30 ? 'Sobrepès' : 'Obesitat' };
-    const f = ({ prima: -1, normal: 0, robusta: 1 }[d.complexio] || 0) + (edat >= 45 ? 1 : 0) + (edat >= 65 ? 1 : 0);
-    const amin = 18.5 + 0.5 * f, amax = 24.9 + f;
-    m.imcAdapt = { min: amin, max: amax, factor: f, status: imc < amin ? 'orange' : imc <= amax ? 'green' : imc <= amax + 5 ? 'orange' : 'red',
-      label: imc < amin ? 'Per sota del rang' : imc <= amax ? 'Dins del teu rang' : 'Per sobre del rang' };
-    m.pesMin = amin * h * h; m.pesMax = amax * h * h;
+    const h = alc / 100, h2 = h * h;
+    const imc = pes / h2;
+    if ((fr === 'infant' || fr === 'adolescent') && d.sexe) {
+      // Menors: IMC per edat de l'OMS (puntuació z)
+      const z = bmiZ(imc, d.sexe, edat);
+      const cuts = [bmiAtZ(-2, d.sexe, edat), bmiAtZ(1, d.sexe, edat), bmiAtZ(2, d.sexe, edat)];
+      m.imc = { value: imc, z, pct: normCdf(z) * 100, cuts, ref: 'OMS 2007 (IMC per edat)',
+        status: z < -2 ? 'orange' : z <= 1 ? 'green' : z <= 2 ? 'orange' : 'red',
+        label: z < -2 ? 'Primesa' : z <= 1 ? 'Pes adequat per a l\'edat' : z <= 2 ? 'Sobrepès' : 'Obesitat' };
+      m.imcAdapt = { min: cuts[0], max: cuts[1], title: 'Rang per a la teva edat', why: 'Per a menors de 19 anys l\'OMS no fa servir els talls d\'adult (18,5 / 25 / 30) sinó l\'IMC segons l\'edat i el sexe. El rang va de −2 a +1 desviacions estàndard.',
+        status: m.imc.status, label: `Percentil ${Math.round(m.imc.pct)} · z = ${nf(z, 2)}` };
+      m.pesAbsMin = cuts[0] * h2;
+    } else if (fr === 'gran') {
+      // 65+: classificació OMS modificada per SEGG i SENPE (normopès 22-26,9)
+      m.imc = { value: imc, cuts: [22, 27, 30], ref: 'SEGG/SENPE (65+)',
+        status: imc < 18.5 ? 'red' : imc < 22 ? 'orange' : imc < 27 ? 'green' : imc < 30 ? 'orange' : 'red',
+        label: imc < 18.5 ? 'Desnutrició' : imc < 22 ? 'Pes insuficient' : imc < 27 ? 'Normopès' : imc < 30 ? 'Sobrepès' : 'Obesitat' };
+      m.imcAdapt = { min: 22, max: 26.9, title: 'Rang per a 65+', why: 'A partir dels 65 anys el rang de menys risc és més alt (22–26,9), segons la SEGG i la SENPE. Un IMC per sota de 22 ja pot indicar risc nutricional.',
+        status: m.imc.status, label: imc < 22 ? 'Per sota del rang' : imc < 27 ? 'Dins del rang' : 'Per sobre del rang' };
+      m.pesAbsMin = 22 * h2;
+    } else {
+      // Adults 18-64: OMS + IMC adaptat del TREC (sexe, edat i complexió)
+      m.imc = { value: imc, cuts: [18.5, 25, 30], ref: 'OMS (adults)',
+        status: imc < 18.5 ? 'orange' : imc < 25 ? 'green' : imc < 30 ? 'orange' : 'red',
+        label: imc < 18.5 ? 'Pes baix' : imc < 25 ? 'Normopès' : imc < 30 ? 'Sobrepès' : 'Obesitat' };
+      const f = (home ? 1 : 0) + (edat >= 50 ? 1 : edat >= 30 ? 0.5 : 0) + ({ prima: -0.2, normal: 0, robusta: 0.2 }[d.complexio] || 0);
+      const amin = 18.5 + f, amax = 24.9 + f;
+      m.imcAdapt = { min: amin, max: amax, factor: f, title: 'IMC adaptat', why: 'Mètode propi del TREC: es desplaça el rang 18,5–24,9 segons el sexe (home +1), l\'edat (30–49 +0,5; 50–64 +1) i la complexió (±0,2). És orientatiu, no és un criteri mèdic.',
+        status: imc < amin ? 'orange' : imc <= amax ? 'green' : imc <= amax + 5 ? 'orange' : 'red',
+        label: imc < amin ? 'Per sota del rang' : imc <= amax ? 'Dins del teu rang' : 'Per sobre del rang' };
+      m.pesAbsMin = 18.5 * h2;
+    }
+    m.pesMin = m.imcAdapt.min * h2; m.pesMax = m.imcAdapt.max * h2;
     if (cintura) {
       const rca = cintura / alc;
       m.rca = { value: rca, status: rca < 0.4 ? 'orange' : rca < 0.5 ? 'green' : rca < 0.6 ? 'orange' : 'red',
         label: rca < 0.4 ? 'Molt baixa' : rca < 0.5 ? 'Saludable' : rca < 0.6 ? 'Risc augmentat' : 'Risc alt',
-        corr: rca < 0.5 ? 0 : rca < 0.55 ? 1 : rca < 0.6 ? 2 : 3 };
+        corr: rca < 0.5 ? 0 : rca < 0.6 ? 2 : 4 };
     }
     if (d.sexe && edat) {
-      const deur = 1.2 * imc + 0.23 * edat - 10.8 * (d.sexe === 'home' ? 1 : 0) - 5.4;
+      // Deurenberg et al. 1991: fórmula infantil fins als 15 anys, d'adult a partir dels 16
+      const nen = edat <= 15;
+      const deur = nen ? 1.51 * imc - 0.70 * edat - 3.6 * (home ? 1 : 0) + 1.4 : 1.2 * imc + 0.23 * edat - 10.8 * (home ? 1 : 0) - 5.4;
       const g = clamp(deur + (m.rca?.corr || 0), 3, 70);
-      const r = fatRange(d.sexe, edat);
-      m.greix = { value: g, deur, corr: m.rca?.corr || 0, ...r, status: g < r.min ? 'orange' : g <= r.max ? 'green' : g <= r.risc ? 'orange' : 'red',
-        label: g < r.min ? 'Per sota' : g <= r.max ? 'Saludable' : g <= r.risc ? 'Elevat' : 'Molt elevat' };
+      if (fr === 'infant' || fr === 'adolescent') {
+        m.greix = { value: g, deur, corr: m.rca?.corr || 0, metode: nen ? 'Deurenberg infantil' : 'Deurenberg adult', status: 'info', label: 'Orientatiu: en menors no es classifica', minor: true };
+      } else {
+        const r = fatRange(d.sexe, edat);
+        m.greix = { value: g, deur, corr: m.rca?.corr || 0, metode: 'Deurenberg adult', ...r, status: g < r.min ? 'orange' : g <= r.max ? 'green' : g <= r.risc ? 'orange' : 'red',
+          label: g < r.min ? 'Per sota' : g <= r.max ? 'Saludable' : g <= r.risc ? 'Elevat' : 'Molt elevat' };
+      }
       m.grassa = pes * g / 100; m.magra = pes - m.grassa;
-      m.mb = 10 * pes + 6.25 * alc - 5 * edat + (d.sexe === 'home' ? 5 : -161);
+      // Metabolisme basal: Mifflin-St Jeor des dels 12 anys; Schofield (pes) per a infants
+      if (fr === 'infant') { m.mb = home ? (edat < 10 ? 22.7 * pes + 495 : 17.5 * pes + 651) : (edat < 10 ? 22.5 * pes + 499 : 12.2 * pes + 746); m.mbMetode = 'Schofield'; }
+      else { m.mb = 10 * pes + 6.25 * alc - 5 * edat + (home ? 5 : -161); m.mbMetode = 'Mifflin-St Jeor'; }
     }
   }
   if (m.mb && d.activitat) {
@@ -518,50 +576,63 @@ function calc(d, opts = {}) {
     m.esports = sp; m.espSetm = sp.reduce((a, b) => a + b.kcal, 0); m.espDia = m.espSetm / 7;
     m.horesSetm = sp.reduce((a, b) => a + b.hores, 0);
     m.det = m.mb + m.neat + m.espDia;
+    const tl = trecLevel(d); m.trec = { ...tl, det: m.mb * tl.factor };
   }
   if (m.det && d.objectiu) {
-    let adj = { perdre: -500, mantenir: 0, guanyar: 250, guanyar_pes: 400 }[d.objectiu];
-    let ritme = null, dies = null, warn = null;
+    const obj = fr === 'infant' ? 'mantenir' : d.objectiu;
+    let adj = { perdre: -500, mantenir: 0, guanyar: 250, guanyar_pes: 400 }[obj];
+    let ritme = null, dies = null, warn = null, note = null;
     const objPes = +d.pes_objectiu;
-    if (d.objectiu !== 'mantenir' && objPes && d.data_objectiu) {
+    if (obj !== 'mantenir' && objPes && d.data_objectiu) {
       dies = Math.round((ts(d.data_objectiu) - ts(opts.today || todayStr())) / DAY);
       if (dies > 0) {
         const delta = objPes - pes;
         adj = delta * 7700 / dies;
         ritme = delta / (dies / 7);
-        if (d.objectiu === 'perdre' && delta >= 0) warn = 'El pes objectiu no és inferior al pes actual.';
-        if ((d.objectiu === 'guanyar' || d.objectiu === 'guanyar_pes') && delta <= 0) warn = 'El pes objectiu no és superior al pes actual.';
+        if (obj === 'perdre' && delta >= 0) warn = 'El pes objectiu no és inferior al pes actual.';
+        if ((obj === 'guanyar' || obj === 'guanyar_pes') && delta <= 0) warn = 'El pes objectiu no és superior al pes actual.';
       } else warn = 'La data objectiu ja ha passat.';
     }
-    // Menors: es fa tot el flux, però el dèficit diari es limita (màx. 300 kcal o 15 % de la despesa).
-    const minor = edat && edat < 18 && adj < 0;
-    const capMin = minor ? -Math.min(300, m.det * 0.15) : null;
-    const capped = minor && adj < capMin;
-    if (capped) adj = capMin;
-    m.minor = !!minor; m.capped = !!capped;
-    m.adj = adj; m.kcal = m.det + adj; m.ritme = ritme; m.dies = dies;
+    const adjAsked = adj;
+    // Adolescents: el dèficit es limita (màx. 300 kcal o 15 % de la despesa)
+    if (fr === 'adolescent' && adj < 0) { const cap = -Math.min(300, m.det * 0.15); if (adj < cap) { adj = cap; note = `Menor d'edat: dèficit limitat a ${Math.round(-cap)} kcal/dia`; } }
+    // 65+: sense dieta per perdre pes si IMC < 30; amb obesitat, dèficit ≤ 500 kcal i mínim 1.200 kcal (ESPEN)
+    if (fr === 'gran' && adj < 0) {
+      if (m.imc && m.imc.value < 30) { adj = 0; note = 'A partir dels 65 anys, amb IMC < 30 no es recomana fer dieta per perdre pes'; }
+      else { if (adj < -500) { adj = -500; note = '65+: dèficit limitat a 500 kcal/dia'; } if (m.det + adj < 1200) { adj = Math.min(0, 1200 - m.det); note = '65+: mínim de 1.200 kcal/dia'; } }
+    }
+    m.adj = adj; m.adjAsked = adjAsked; m.kcal = m.det + adj; m.ritme = ritme; m.dies = dies;
+    m.capped = !!note; m.minor = fr === 'adolescent' && adj < 0;
+    if (adj < 0) m.defVal = DEFICIT_VAL(-adjAsked);
     const pct = ritme != null ? Math.abs(ritme) / pes * 100 : null;
     m.ritmePct = pct;
-    const loss = d.objectiu === 'perdre';
+    const loss = obj === 'perdre';
     let st = 'green', lab = 'Objectiu realista';
     if (pct != null) {
       if (loss) { if (pct > 1) { st = 'red'; lab = 'Ritme massa ràpid'; } else if (pct > 0.75) { st = 'orange'; lab = 'Ritme exigent'; } }
       else { if (pct > 0.5) { st = 'red'; lab = 'Ritme massa ràpid'; } else if (pct > 0.25) { st = 'orange'; lab = 'Ritme exigent'; } }
     }
-    if (m.kcal < m.mb) { st = 'red'; lab = 'Per sota del metabolisme basal'; }
+    if (m.kcal < m.mb && fr !== 'gran') { st = 'red'; lab = 'Per sota del metabolisme basal'; }
     if (warn) { st = 'orange'; lab = 'Revisa l\'objectiu'; }
-    if (d.objectiu === 'mantenir') { lab = 'Manteniment'; }
-    if (capped) { st = 'orange'; lab = `Menor d'edat: dèficit limitat a ${Math.round(-capMin)} kcal/dia`; }
+    if (obj === 'mantenir') { lab = 'Manteniment'; }
+    if (fr === 'infant') { st = 'green'; lab = 'Infants: sense dieta, hàbits saludables'; }
+    if (note) { st = 'orange'; lab = note; }
     m.val = { status: st, label: lab, warn };
-    // data realista
-    if (objPes && d.objectiu !== 'mantenir') {
-      const wk = Math.abs(objPes - pes) / (pes * (loss ? 0.0065 : 0.0022));
+    if (objPes && obj !== 'mantenir') {
+      const wk = Math.abs(objPes - pes) / (pes * (loss ? (fr === 'gran' || fr === 'adolescent' ? 0.005 : 0.0065) : 0.0022));
       m.dataRealista = addDays(opts.today || todayStr(), Math.ceil(wk * 7));
     }
-    const ref = m.imc && m.imc.value >= 30 && m.pesMax ? m.pesMax : pes;
-    const gkg = { perdre: 1.8, mantenir: 1.4, guanyar: 2.0, guanyar_pes: 1.6 }[d.objectiu];
+    // Proteïna (g/kg): EFSA (0,83 adults), PROT-AGE (1,0-1,2 a 65+), ISSN (1,4-2,0 amb entrenament)
+    const esp = (m.horesSetm || 0) >= 3;
+    let gkg;
+    if (fr === 'infant' || fr === 'adolescent') gkg = esp ? 1.2 : 0.9;
+    else if (fr === 'gran') gkg = esp || obj === 'perdre' ? 1.2 : 1.0;
+    else gkg = ({ perdre: 1.2, mantenir: 0.8, guanyar: 1.6, guanyar_pes: 1.2 }[obj]) + (esp ? 0.4 : 0);
+    const ref = m.imc && m.imc.label === 'Obesitat' && m.pesMax ? m.pesMax : pes;
     m.prot = { value: ref * gkg, gkg, ref };
-    m.aigua = pes * 0.035 + (m.horesSetm || 0) / 7 * 0.5;
+    // Aigua total (begudes + aliments): EFSA 2010 per edat i sexe + 0,5 L per hora d'esport
+    const base = edat < 9 ? 1.6 : edat < 14 ? (home ? 2.1 : 1.9) : (home ? 2.5 : 2.0);
+    m.aigua = base + (m.horesSetm || 0) / 7 * 0.5;
   }
   return m;
 }
@@ -754,8 +825,9 @@ function dashHTML() {
         <div class="chip"><b class="num">${fmtShort(p.data_objectiu)}</b><span>Data objectiu</span></div>
       </div></div></div>`;
   } else {
-    hero = `<div class="hero"><div class="hero-grid"><div><div class="k">${GOALS[p.objectiu].label}</div>
-      <div class="big num" style="margin-top:10px">${n(m.kcal, 0)}<small>kcal/dia</small></div>
+    const inf = m.franja === 'infant';
+    hero = `<div class="hero"><div class="hero-grid"><div><div class="k">${inf ? 'Creixement i hàbits saludables' : GOALS[p.objectiu].label}</div>
+      <div class="big num" style="margin-top:10px">${n(m.kcal, 0)}<small>kcal/dia${inf ? ' · necessitat estimada, no és un objectiu' : ''}</small></div>
       <div class="small" style="margin-top:10px;color:#A7F3D0">Pes actual ${n(cw)} kg${le ? ' · últim registre ' + fmtShort(le.date) : ''}</div></div>
       <div class="chips"><div class="chip"><b class="num">${n(m.prot?.value, 0)} g</b><span>Proteïna/dia</span></div><div class="chip"><b class="num">${nf(m.aigua, 1)} L</b><span>Aigua/dia</span></div></div></div></div>`;
   }
@@ -763,13 +835,13 @@ function dashHTML() {
   const nudge = daysSince == null || daysSince >= 7
     ? `<div class="callout mint" style="margin-top:16px;align-items:center">${ic('clock', 20)}<div style="flex:1">${daysSince == null ? 'Encara no tens cap registre de pes.' : `Fa ${daysSince} dies del teu últim registre.`} Un registre setmanal fa que la tendència sigui fiable.</div><button class="btn sm" data-act="checkin">Registrar ara</button></div>` : '';
   return `<div class="ph"><div><div class="eb">Tauler principal</div><h1>Hola, ${esc(p.nom || '')}</h1>
-      <p>${GOALS[p.objectiu].label}${p.pes_objectiu && p.objectiu !== 'mantenir' ? ` · ${n(p.pes_objectiu)} kg` : ''}${p.data_objectiu && p.objectiu !== 'mantenir' ? ` abans del ${fmtDate(p.data_objectiu)}` : ''}</p></div>
+      <p>${m.franja === 'infant' ? 'Seguiment del creixement' : GOALS[p.objectiu].label}${p.pes_objectiu && p.objectiu !== 'mantenir' ? ` · ${n(p.pes_objectiu)} kg` : ''}${p.data_objectiu && p.objectiu !== 'mantenir' ? ` abans del ${fmtDate(p.data_objectiu)}` : ''}</p></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">${badge('green')}${badge('orange')}${badge('red')}</div></div>
     ${hero}${nudge}${todayFoodStrip(m)}
     <div class="grid g2" style="margin-top:22px">${energyPanel(m, p)}${sportsPanel(m)}</div>
     <h2 style="margin:30px 0 14px;font-size:22px">Els teus indicadors</h2>
     ${metricsTabs(m, p)}
-    <p class="small faint" style="margin-top:24px">Valors orientatius (Deurenberg, Mifflin-St Jeor, MET de l'Compendium of Physical Activities). No substitueixen el consell d'un professional sanitari.</p>`;
+    <p class="small faint" style="margin-top:24px">Valors orientatius calculats per a la franja ${esc((FRANJA[m.franja] || '').toLowerCase())} (OMS, SEGG/SENPE, Deurenberg, ${m.mbMetode || 'Mifflin-St Jeor'}, MET del Compendium of Physical Activities, EFSA). No substitueixen el consell d'un professional sanitari.</p>`;
 }
 function todayFoodStrip(m) {
   if (typeof HAS_FOODS === 'undefined' || !HAS_FOODS) return '';
@@ -789,7 +861,7 @@ function energyPanel(m, p) {
     <div class="muted small" style="margin-top:4px">Despesa total ${n(tot, 0)} kcal ${adjTxt}</div>
     <div class="stack">${parts.map(([l, v, c]) => v > 0 ? `<div style="flex:${v};background:${c}" title="${l}">${v / tot > .12 ? n(v, 0) : ''}</div>` : '').join('')}</div>
     <div class="legend">${parts.map(([l, v, c]) => `<span><i style="background:${c}"></i>${l} <b class="num">${n(v, 0)}</b></span>`).join('')}</div>
-    <div style="margin-top:14px">${badge(m.val.status, m.val.label)} ${m.ritme != null ? `<span class="small muted">· ${nf(Math.abs(m.ritme), 2)} kg/setmana (${nf(m.ritmePct, 2)}% del pes)</span>` : ''}</div>
+    <div style="margin-top:14px">${badge(m.val.status, m.val.label)} ${m.defVal ? badge(m.defVal.status, 'Dèficit ' + m.defVal.label.toLowerCase()) : ''} ${m.ritme != null ? `<span class="small muted">· ${nf(Math.abs(m.ritme), 2)} kg/setmana (${nf(m.ritmePct, 2)}% del pes)</span>` : ''}</div>
     ${m.val.warn ? `<div class="callout amber" style="margin-top:12px">${ic('triangle-alert', 18)}<span>${esc(m.val.warn)}</span></div>` : ''}
   </div>`;
 }
@@ -810,25 +882,27 @@ function metricsTabs(m, p) {
   const groups = [
     { id: 'composicio', label: 'Composició corporal', cards: [
       { title: 'IMC', em: 'scale', value: nf(m.imc.value, 1), unit: 'kg/m²', status: m.imc.status, label: m.imc.label,
-        range: { min: 15, max: 40, zones: [[18.5, 'orange'], [25, 'green'], [30, 'orange'], [40, 'red']], value: m.imc.value, lo: 18.5, hi: 24.9 },
-        why: 'Pes (kg) dividit per l\'alçada (m) al quadrat. No distingeix múscul de greix: mira-ho juntament amb el % de greix i la cintura.' },
-      { title: 'IMC adaptat', em: 'target', value: `${n(m.imcAdapt.min)}–${n(m.imcAdapt.max)}`, status: m.imcAdapt.status, label: m.imcAdapt.label,
-        range: { min: 15, max: 40, zones: [[m.imcAdapt.min, 'orange'], [m.imcAdapt.max, 'green'], [Math.min(m.imcAdapt.max + 5, 40), 'orange'], [40, 'red']], value: m.imc.value, lo: m.imcAdapt.min, hi: m.imcAdapt.max },
-        hint: `Pes saludable per a tu: <b>${n(m.pesMin)}–${n(m.pesMax)} kg</b>`, why: 'Rang d\'IMC desplaçat segons la complexió (prova del canell) i l\'edat.' },
+        range: { min: Math.min(12, m.imc.cuts[0] - 3), max: 40, zones: [[m.imc.cuts[0], 'orange'], [m.imc.cuts[1], 'green'], [m.imc.cuts[2], 'orange'], [40, 'red']], value: m.imc.value, lo: m.imc.cuts[0], hi: m.imc.cuts[1] },
+        hint: `Referència: ${m.imc.ref}`, why: 'Pes (kg) dividit per l\'alçada (m) al quadrat. No distingeix múscul de greix: mira-ho juntament amb el % de greix i la cintura. Els talls depenen de l\'edat: OMS per edat fins als 17 anys, OMS d\'adults fins als 64 i SEGG/SENPE a partir dels 65.' },
+      { title: m.imcAdapt.title, em: 'target', value: `${n(m.imcAdapt.min)}–${n(m.imcAdapt.max)}`, status: m.imcAdapt.status, label: m.imcAdapt.label,
+        range: { min: Math.min(12, m.imcAdapt.min - 3), max: 40, zones: [[m.imcAdapt.min, 'orange'], [m.imcAdapt.max, 'green'], [Math.min(m.imcAdapt.max + 5, 40), 'orange'], [40, 'red']], value: m.imc.value, lo: m.imcAdapt.min, hi: m.imcAdapt.max },
+        hint: `Pes saludable per a tu: <b>${n(m.pesMin)}–${n(m.pesMax)} kg</b>`, why: m.imcAdapt.why },
       ...(m.rca ? [{ title: 'Cintura / alçada', em: 'ruler', value: nf(m.rca.value, 2), status: m.rca.status, label: m.rca.label,
         range: { min: 0.3, max: 0.75, zones: [[0.4, 'orange'], [0.5, 'green'], [0.6, 'orange'], [0.75, 'red']], value: m.rca.value, lo: 0.4, hi: 0.49, d: 2 },
         why: 'Cintura dividida per l\'alçada. Per sota de 0,5 és la regla més senzilla de risc cardiometabòlic baix ("cintura < meitat de l\'alçada").' }] : []),
       { title: '% greix', em: 'percent', value: nf(g.value, 1), unit: '%', status: g.status, label: g.label,
-        range: { min: 0, max: g.risc + 15, zones: [[g.min, 'orange'], [g.max, 'green'], [g.risc, 'orange'], [g.risc + 15, 'red']], value: g.value, lo: g.min, hi: g.max, unit: '%' },
-        hint: `Deurenberg ${nf(g.deur, 1)}%${g.corr ? ` + correcció cintura ${g.corr}%` : ''}`, why: 'Fórmula de Deurenberg (IMC, edat i sexe) amb una correcció si la relació cintura-alçada és alta.' },
+        range: g.minor ? null : { min: 0, max: g.risc + 15, zones: [[g.min, 'orange'], [g.max, 'green'], [g.risc, 'orange'], [g.risc + 15, 'red']], value: g.value, lo: g.min, hi: g.max, unit: '%' },
+        hint: `${g.metode} ${nf(g.deur, 1)}%${g.corr ? ` + correcció cintura ${g.corr}%` : ''}`, why: 'Fórmula de Deurenberg (1991): la infantil fins als 15 anys i la d\'adult a partir dels 16, amb una correcció si la relació cintura-alçada és alta (+2 % entre 0,5 i 0,59; +4 % a partir de 0,6).' },
       { title: 'Massa grassa', em: 'droplet', value: nf(m.grassa, 1), unit: 'kg', status: g.status, label: g.label,
-        range: { min: 0, max: kg(g.risc + 15), zones: [[kg(g.min), 'orange'], [kg(g.max), 'green'], [kg(g.risc), 'orange'], [kg(g.risc + 15), 'red']], value: m.grassa, lo: kg(g.min), hi: kg(g.max), unit: ' kg' } },
+        range: g.minor ? null : { min: 0, max: kg(g.risc + 15), zones: [[kg(g.min), 'orange'], [kg(g.max), 'green'], [kg(g.risc), 'orange'], [kg(g.risc + 15), 'red']], value: m.grassa, lo: kg(g.min), hi: kg(g.max), unit: ' kg' } },
       { title: 'Massa magra', em: 'dumbbell', value: nf(m.magra, 1), unit: 'kg', status: 'info', label: 'Pes − massa grassa' },
     ] },
     { id: 'energia', label: 'Energia', cards: [
-      { title: 'Metabolisme basal', em: 'zap', value: n(m.mb, 0), unit: 'kcal', status: 'info', label: 'Mifflin-St Jeor', why: 'Energia que gastes en repòs absolut. És el mínim que no hauries de baixar de manera sostinguda.' },
+      { title: 'Metabolisme basal', em: 'zap', value: n(m.mb, 0), unit: 'kcal', status: 'info', label: m.mbMetode, why: 'Energia que gastes en repòs absolut. És el mínim que no hauries de baixar de manera sostinguda. Mifflin-St Jeor des dels 12 anys; Schofield (OMS/FAO) per a infants.' },
       { title: 'Activitat diària', em: ACT[p.activitat].em, value: n(m.neat, 0), unit: 'kcal', status: 'info', label: `${ACT[p.activitat].label} · ×${ACT[p.activitat].factor}`, why: 'Despesa del dia a dia sense comptar l\'esport (caminar, estar dret, feina).' },
       { title: 'Esport', em: 'activity', value: n(m.espDia, 0), unit: 'kcal/dia', status: 'info', label: `${n(m.espSetm, 0)} kcal/setmana`, why: 'Per cada esport: (MET × intensitat − 1) × pes × hores. Restem 1 MET perquè el repòs ja és dins del basal.' },
+      ...(m.trec ? [{ title: 'Despesa (mètode TREC)', em: 'gauge', value: n(m.trec.det, 0), unit: 'kcal', status: 'info', label: `${m.trec.label} · ×${String(m.trec.factor).replace('.', ',')}`,
+        hint: `Diferència amb el càlcul per esport: ${m.trec.det - m.det >= 0 ? '+' : '−'}${n(Math.abs(m.trec.det - m.det), 0)} kcal`, why: 'Metabolisme basal × factor d\'activitat (1,2–1,9). Es calcula en paral·lel per comparar-lo amb el mètode de l\'app, que suma l\'esport real.' }] : []),
       { title: 'Calories objectiu', em: 'flame', value: n(m.kcal, 0), unit: 'kcal', status: m.val.status, label: m.val.label,
         range: { min: m.mb * 0.8, max: m.det + 800, zones: [[m.mb, 'red'], [m.det + 500, 'green'], [m.det + 800, 'orange']], value: m.kcal, lo: m.mb, hi: m.det, loLabel: 'Basal', hiLabel: 'Manteniment', unit: '', d: 0 } },
     ] },
@@ -838,8 +912,9 @@ function metricsTabs(m, p) {
         hint: m.dies > 0 ? `${m.dies} dies (${n(m.dies / 7)} setmanes)${m.dataRealista ? ` · data recomanada: ${fmtDate(m.dataRealista)}` : ''}` : null,
         why: 'Mesurat en % del pes corporal per setmana: és més just que un número fix de kg (1 kg/setmana no és el mateix pesant 60 kg que 120 kg).' },
       { title: 'Proteïnes', em: 'beef', value: n(m.prot.value, 0), unit: 'g/dia', status: 'info', label: `${nf(m.prot.gkg, 1)} g/kg${m.prot.ref !== pes ? ' de pes de referència' : ''}`,
-        range: { min: m.prot.ref * 0.8, max: m.prot.ref * 2.6, zones: [[m.prot.ref * 1.2, 'orange'], [m.prot.ref * 2.2, 'green'], [m.prot.ref * 2.6, 'orange']], value: m.prot.value, lo: m.prot.ref * 1.2, hi: m.prot.ref * 2.2, unit: ' g', d: 0 } },
-      { title: 'Hidratació', em: 'droplet', value: nf(m.aigua, 1), unit: 'L/dia', status: 'info', label: '35 ml/kg + esport' },
+        range: { min: m.prot.ref * 0.5, max: m.prot.ref * 2.6, zones: [[m.prot.ref * 0.8, 'orange'], [m.prot.ref * 2.0, 'green'], [m.prot.ref * 2.6, 'orange']], value: m.prot.value, lo: m.prot.ref * 0.8, hi: m.prot.ref * 2.0, unit: ' g', d: 0 },
+        why: 'Segons l\'edat i l\'esport: 0,8 g/kg en adults (EFSA), 1,0–1,2 a partir dels 65 (PROT-AGE) i fins a 2,0 amb entrenament regular (ISSN).' },
+      { title: 'Hidratació', em: 'droplet', value: nf(m.aigua, 1), unit: 'L/dia', status: 'info', label: 'Referència EFSA + esport', why: 'Aigua total del dia segons l\'EFSA (2010) per edat i sexe, més 0,5 L per hora d\'esport. Inclou l\'aigua dels aliments (un 20–30 %): per beure, compta un 70–80 % d\'aquesta xifra.' },
     ] },
   ];
   return `<div class="tabs">${groups.map(g => `<button data-act="tab" data-tab="${g.id}" class="${ui.tab === g.id ? 'on' : ''}">${g.label}</button>`).join('')}</div>
@@ -943,7 +1018,7 @@ function profileHTML() {
       <button class="btn ghost" data-act="edit" data-step="nom">Refer el qüestionari</button></div>
     <div class="grid g2">
       ${sec('Sobre tu', 'sexe', [['Sexe', SEX[p.sexe]], ['Edat', `${p.edat} anys`], ['Alçada', `${n(p.alcada)} cm`]])}
-      ${sec('Cos', 'pes', [['Pes al perfil', `${n(p.pes)} kg`], ['Pes actual (últim registre)', `${n(currentWeight())} kg`], ['Cintura', p.cintura ? `${n(p.cintura)} cm` : 'No indicada'], ['Complexió', COMPLEX[p.complexio].label]])}
+      ${sec('Cos', 'pes', [['Pes al perfil', `${n(p.pes)} kg`], ['Pes actual (últim registre)', `${n(currentWeight())} kg`], ['Cintura', p.cintura ? `${n(p.cintura)} cm` : 'No indicada'], ['Complexió', COMPLEX[p.complexio]?.label || '—'], ['Mesures', MESURES[p.mesures]?.label || '—']])}
       ${sec('Activitat i esport', 'activitat', [['Dia a dia', ACT[p.activitat].label], ...sp])}
       ${sec('Objectiu', 'objectiu', [['Objectiu', GOALS[p.objectiu].label], ...(p.objectiu !== 'mantenir' ? [['Pes objectiu', p.pes_objectiu ? `${n(p.pes_objectiu)} kg` : '—'], ['Data objectiu', fmtDate(p.data_objectiu)]] : []), ['Calories objectiu', `${n(m.kcal, 0)} kcal/dia`]])}
     </div>
@@ -963,12 +1038,19 @@ function profileHTML() {
    WIZARD — una pregunta per pantalla
    ========================================================= */
 const WZ = { open: false, draft: null, id: null, dir: 1, editMode: false, filter: '' };
-const DEFAULTS = { email: '', pin: '', consent: false, nom: '', sexe: '', edat: '', alcada: 170, pes: 70, cintura: '', complexio: '', activitat: '', fa_esport: null, esports: [], objectiu: '', pes_objectiu: '', data_objectiu: '' };
+const DEFAULTS = { email: '', pin: '', consent: false, nom: '', sexe: '', edat: '', alcada: 170, pes: 70, cintura: '', mesures: '', tutor: false, complexio: '', activitat: '', fa_esport: null, esports: [], objectiu: '', pes_objectiu: '', data_objectiu: '' };
 
 function wzSteps(d) {
-  const s = [...(CFG.estudi && !S().participant ? [['compte', 'Estudi']] : []), ['nom', 'Tu'], ['sexe', 'Tu'], ['edat', 'Tu'], ['alcada', 'Cos'], ['pes', 'Cos'], ['cintura', 'Cos'], ['complexio', 'Cos'], ['activitat', 'Activitat'], ['fa_esport', 'Esport']];
+  const e = d.edat === '' || d.edat == null ? null : +d.edat;
+  const s = [...(CFG.estudi && !S().participant ? [['compte', 'Estudi']] : []), ['nom', 'Tu'], ['sexe', 'Tu'], ['edat', 'Tu'],
+    ...(CFG.estudi && e != null && e < 14 ? [['tutor', 'Estudi']] : []),
+    ['alcada', 'Cos'], ['pes', 'Cos'], ['cintura', 'Cos'], ['mesures', 'Cos'],
+    // la prova del canell només s'usa per a l'IMC adaptat (adults de 18 a 64 anys)
+    ...(e == null || (e >= 18 && e < 65) ? [['complexio', 'Cos']] : []),
+    ['activitat', 'Activitat'], ['fa_esport', 'Esport']];
   if (d.fa_esport) { s.push(['esports', 'Esport']); (d.esports || []).forEach(e => s.push(['sport:' + e.sport, 'Esport'])); }
-  s.push(['objectiu', 'Objectiu']);
+  if (e != null && e < 12) d.objectiu = 'mantenir'; // infants: sense objectius de pes
+  else s.push(['objectiu', 'Objectiu']);
   if (d.objectiu && d.objectiu !== 'mantenir') { s.push(['pes_objectiu', 'Objectiu']); s.push(['data_objectiu', 'Objectiu']); }
   s.push(['resum', 'Resum']);
   return s.map(([id, sec]) => ({ id, sec }));
@@ -997,11 +1079,23 @@ const STEP = {
   },
   nom: { q: d => 'Com et dius?', sub: () => 'Només el nom, per saludar-te.', html: d => `<input id="wzin" class="txt" data-f="nom" maxlength="40" placeholder="El teu nom" value="${esc(d.nom)}" autocomplete="given-name">`, ok: d => d.nom.trim().length > 0 },
   sexe: { q: d => `Encantat, ${esc(d.nom.trim() || '')}! Quin és el teu sexe?`, sub: () => 'El necessitem per a les fórmules de metabolisme i % de greix.', html: d => `<div class="opts c2 keep">${Object.entries({ home: { label: 'Home' }, dona: { label: 'Dona' } }).map(([k, o], i) => opt('sexe', k, o, i, d.sexe)).join('')}</div>`, ok: d => !!d.sexe, auto: true },
-  edat: { q: () => 'Quants anys tens?', sub: () => '', html: () => bignum('edat', 'anys', 1, 14, 90),
-    fb: d => (d.edat && +d.edat < 18 && +d.edat >= 14 ? `<div class="feedback fb-orange">Les fórmules d'aquesta eina són per a adults. Si tens menys de 18 anys, fes servir els resultats només com a orientació i parla-ho amb un professional abans de fer canvis de dieta.</div>` : ''), ok: d => inRange(d.edat, 14, 90) },
-  alcada: { q: () => 'Quant mesures?', sub: () => 'Descalç, en centímetres.', html: () => bignum('alcada', 'cm', 1, 130, 215, true), ok: d => inRange(d.alcada, 130, 215) },
-  pes: { q: () => 'Quant peses ara?', sub: () => 'Millor al matí, en dejú i després d\'anar al lavabo.', html: () => bignum('pes', 'kg', 0.1, 35, 250, true), ok: d => inRange(d.pes, 35, 250) },
-  cintura: { q: () => 'I la cintura?', sub: () => 'Amb una cinta mètrica a l\'altura del melic, sense estrènyer i després d\'expulsar l\'aire. Si ara no pots, salta-ho i ho afegeixes en un registre.', html: () => bignum('cintura', 'cm', 0.5, 50, 200), ok: d => d.cintura === '' || inRange(d.cintura, 50, 200), skip: 'Ara no ho sé' },
+  edat: { q: () => 'Quants anys tens?', sub: () => '', html: () => bignum('edat', 'anys', 1, 6, 99),
+    fb: d => {
+      if (!inRange(d.edat, 6, 99)) return '';
+      const fr = franja(+d.edat);
+      if (fr === 'infant') return `<div class="feedback fb-info">Per a infants l'app no proposa dietes ni calories objectiu: només mostra indicadors de creixement de l'OMS i consells d'hàbits. Fes-ho amb una persona adulta.</div>`;
+      if (fr === 'adolescent') return `<div class="feedback fb-orange">Per a menors de 18 anys es fan servir les taules de l'OMS per edat i el dèficit de calories queda limitat. Fes servir els resultats com a orientació i parla-ho amb un professional abans de fer canvis de dieta.</div>`;
+      if (fr === 'gran') return `<div class="feedback fb-info">A partir dels 65 anys es fan servir rangs de pes específics per a aquesta edat i es prioritza conservar el múscul.</div>`;
+      return '';
+    }, ok: d => inRange(d.edat, 6, 99) },
+  tutor: { q: () => 'Consentiment del pare, mare o tutor', sub: () => 'Com que tens menys de 14 anys, una persona adulta responsable de tu ha d\'autoritzar la participació a l\'estudi.',
+    html: d => `<label class="consent"><input type="checkbox" id="wztutor" ${d.tutor ? 'checked' : ''}><span>El meu pare, mare o tutor legal ha llegit la informació de l'estudi i autoritza que hi participi.</span></label>`,
+    ok: d => !!d.tutor },
+  alcada: { q: () => 'Quant mesures?', sub: () => 'Descalç, en centímetres.', html: () => bignum('alcada', 'cm', 1, 100, 215, true), ok: d => inRange(d.alcada, 100, 215) },
+  pes: { q: () => 'Quant peses ara?', sub: () => 'Millor al matí, en dejú i després d\'anar al lavabo.', html: () => bignum('pes', 'kg', 0.1, 15, 250, true), ok: d => inRange(d.pes, 15, 250) },
+  cintura: { q: () => 'I la cintura?', sub: () => 'Amb una cinta mètrica a l\'altura del melic, sense estrènyer i després d\'expulsar l\'aire. Si ara no pots, salta-ho i ho afegeixes en un registre.', html: () => bignum('cintura', 'cm', 0.5, 40, 200), ok: d => d.cintura === '' || inRange(d.cintura, 40, 200), skip: 'Ara no ho sé' },
+  mesures: { q: () => 'Com has obtingut aquestes mesures?', sub: () => 'Ens ajuda a saber com de fiables són les dades de l\'estudi.',
+    html: d => `<div class="opts c3">${Object.entries(MESURES).map(([k, o], i) => opt('mesures', k, o, i, d.mesures)).join('')}</div>`, ok: d => !!d.mesures, auto: true },
   complexio: { q: () => 'Fem la prova del canell', sub: () => 'Envolta el canell de la mà dominant amb el polze i l\'índex de l\'altra mà. Què passa amb els dits?', html: d => `<div class="opts c3">${Object.entries(COMPLEX).map(([k, o], i) => opt('complexio', k, o, i, d.complexio)).join('')}</div>`, ok: d => !!d.complexio, auto: true },
   activitat: { q: () => 'Com és el teu dia a dia?', sub: () => 'Sense comptar l\'esport: això ho preguntem a continuació.', html: d => `<div class="opts c2">${Object.entries(ACT).map(([k, o], i) => opt('activitat', k, o, i, d.activitat)).join('')}</div>`, ok: d => !!d.activitat, auto: true },
   fa_esport: { q: () => 'Practiques algun esport?', sub: () => 'Inclou gimnàs, caminar a bon ritme o qualsevol activitat planificada.', html: d => `<div class="opts c2 keep">${opt('fa_esport', 'si', { label: 'Sí' }, 0, d.fa_esport === true ? 'si' : '')}${opt('fa_esport', 'no', { label: 'No, de moment' }, 1, d.fa_esport === false ? 'no' : '')}</div>`, ok: d => d.fa_esport != null, auto: true },
@@ -1012,7 +1106,14 @@ const STEP = {
       return `<div class="sel-bar"><input class="search" id="wzsearch" placeholder="Cerca: córrer, pàdel, gimnàs…" value="${esc(WZ.filter)}"></div><div id="sportlist">${sportList(sel)}</div>`;
     }, ok: d => (d.esports || []).length > 0,
   },
-  objectiu: { q: () => 'Quin és el teu objectiu?', sub: () => '', html: d => `<div class="opts c2">${Object.entries(GOALS).map(([k, o], i) => opt('objectiu', k, o, i, d.objectiu)).join('')}</div>`, ok: d => !!d.objectiu, auto: true },
+  objectiu: { q: () => 'Quin és el teu objectiu?', sub: () => '', html: d => `<div class="opts c2">${Object.entries(GOALS).map(([k, o], i) => opt('objectiu', k, o, i, d.objectiu)).join('')}</div>`,
+    fb: d => {
+      if (d.objectiu !== 'perdre') return '';
+      const fr = franja(+d.edat), m = calc(d);
+      if (fr === 'gran' && m.imc && m.imc.value < 30) return `<div class="feedback fb-info">Amb un IMC per sota de 30, a partir dels 65 anys les guies (ESPEN) no recomanen fer dieta per perdre pes: és millor mantenir el pes i guanyar força. L'app et calcularà calories de manteniment.</div>`;
+      if (fr === 'adolescent') return `<div class="feedback fb-orange">Com que tens menys de 18 anys, el dèficit queda limitat a 300 kcal/dia com a màxim.</div>`;
+      return '';
+    }, ok: d => !!d.objectiu, auto: true },
   pes_objectiu: {
     q: d => d.objectiu === 'perdre' ? 'Fins a quin pes vols baixar?' : 'Fins a quin pes vols arribar?',
     sub: () => '',
@@ -1021,23 +1122,23 @@ const STEP = {
       const picks = d.objectiu === 'perdre'
         ? [['−5%', p * .95], ['−10%', p * .9], ...(m.pesMax && m.pesMax < p * .95 ? [['Màxim saludable', m.pesMax]] : [])]
         : [['+3%', p * 1.03], ['+5%', p * 1.05], ...(m.pesMin && m.pesMin > p ? [['Mínim saludable', m.pesMin]] : [])];
-      return bignum('pes_objectiu', 'kg', 0.5, 35, 250) + `<div class="quick">${picks.map(([l, val]) => `<button data-act="setv" data-f="pes_objectiu" data-v="${Math.round(val * 2) / 2}">${l} · ${n(Math.round(val * 2) / 2)} kg</button>`).join('')}</div>`;
+      return bignum('pes_objectiu', 'kg', 0.5, 15, 250) + `<div class="quick">${picks.map(([l, val]) => `<button data-act="setv" data-f="pes_objectiu" data-v="${Math.round(val * 2) / 2}">${l} · ${n(Math.round(val * 2) / 2)} kg</button>`).join('')}</div>`;
     },
     fb: d => {
       const m = calc(d); const p = +d.pes; const v = +d.pes_objectiu;
-      if (!v || !m.pesMin || v < 35) return '';
-      const h = d.alcada / 100, absMin = 18.5 * h * h;
+      if (!v || !m.pesMin || v < 15) return '';
+      const h = d.alcada / 100, absMin = m.pesAbsMin;
       const dir = d.objectiu === 'perdre' ? v < p : v > p;
       if (!dir) return `<div class="feedback fb-orange">Aquest pes no va en la direcció del teu objectiu (ara peses ${n(p)} kg).</div>`;
-      if (v < absMin) return `<div class="feedback fb-red">Amb ${n(v)} kg el teu IMC seria de ${nf(v / (h * h), 1)}, per sota del mínim saludable (18,5). Tria un pes de com a mínim <b>${n(Math.ceil(absMin))} kg</b>.</div>`;
+      if (v < absMin) return `<div class="feedback fb-red">Amb ${n(v)} kg el teu IMC seria de ${nf(v / (h * h), 1)}, per sota del mínim saludable per a la teva edat (${nf(absMin / (h * h), 1)}). Tria un pes de com a mínim <b>${n(Math.ceil(absMin))} kg</b>.</div>`;
       if (v < m.pesMin) return `<div class="feedback fb-orange">Està per sota del teu rang saludable (${n(m.pesMin)}–${n(m.pesMax)} kg). Et recomanem un objectiu una mica més alt.</div>`;
       if (v <= m.pesMax) return `<div class="feedback fb-green">Dins del teu rang saludable (${n(m.pesMin)}–${n(m.pesMax)} kg). Són ${n(Math.abs(v - p))} kg ${d.objectiu === 'perdre' ? 'menys' : 'més'}.</div>`;
       return `<div class="feedback fb-info">Són ${n(Math.abs(v - p))} kg. El teu rang saludable és ${n(m.pesMin)}–${n(m.pesMax)} kg: és un bon primer objectiu intermedi, i després en pots fixar un altre.</div>`;
     },
     ok: d => {
-      if (!inRange(d.pes_objectiu, 35, 250)) return false;
-      const v = +d.pes_objectiu, p = +d.pes, h = d.alcada / 100;
-      if (v < 18.5 * h * h) return false;
+      if (!inRange(d.pes_objectiu, 15, 250)) return false;
+      const v = +d.pes_objectiu, p = +d.pes, mm = calc(d);
+      if (mm.pesAbsMin && v < mm.pesAbsMin) return false;
       return d.objectiu === 'perdre' ? v < p : v > p;
     },
   },
@@ -1064,9 +1165,9 @@ const STEP = {
     q: d => 'Tot a punt! Revisa-ho', sub: () => 'Toca qualsevol resposta per canviar-la.',
     html: d => {
       const m = calc(d);
-      const rows = [['nom', 'Nom', d.nom], ['sexe', 'Sexe', SEX[d.sexe]], ['edat', 'Edat', d.edat + ' anys'], ['alcada', 'Alçada', n(d.alcada) + ' cm'], ['pes', 'Pes', n(d.pes) + ' kg'], ['cintura', 'Cintura', d.cintura ? n(d.cintura) + ' cm' : 'No indicada'],
-        ['complexio', 'Complexió', COMPLEX[d.complexio]?.label], ['activitat', 'Dia a dia', ACT[d.activitat]?.label], ['fa_esport', 'Esport', d.fa_esport ? d.esports.map(e => SPORT[e.sport].label).join(', ') : 'Cap'],
-        ['objectiu', 'Objectiu', GOALS[d.objectiu]?.label], ...(d.objectiu !== 'mantenir' ? [['pes_objectiu', 'Pes objectiu', n(d.pes_objectiu) + ' kg'], ['data_objectiu', 'Data', fmtDate(d.data_objectiu)]] : [])];
+      const rows = [['nom', 'Nom', d.nom], ['sexe', 'Sexe', SEX[d.sexe]], ['edat', 'Edat', d.edat + ' anys'], ['alcada', 'Alçada', n(d.alcada) + ' cm'], ['pes', 'Pes', n(d.pes) + ' kg'], ['cintura', 'Cintura', d.cintura ? n(d.cintura) + ' cm' : 'No indicada'], ['mesures', 'Mesures', MESURES[d.mesures]?.label],
+        ...(wzSteps(d).some(x => x.id === 'complexio') ? [['complexio', 'Complexió', COMPLEX[d.complexio]?.label]] : []), ['activitat', 'Dia a dia', ACT[d.activitat]?.label], ['fa_esport', 'Esport', d.fa_esport ? d.esports.map(e => SPORT[e.sport].label).join(', ') : 'Cap'],
+        ...(+d.edat >= 12 ? [['objectiu', 'Objectiu', GOALS[d.objectiu]?.label]] : []), ...(d.objectiu !== 'mantenir' ? [['pes_objectiu', 'Pes objectiu', n(d.pes_objectiu) + ' kg'], ['data_objectiu', 'Data', fmtDate(d.data_objectiu)]] : [])];
       return `<div class="recap">${rows.map(([id, k, v]) => `<button data-act="goto" data-step="${id}"><span>${k}</span><b>${esc(v)}</b></button>`).join('')}</div>
         ${m.kcal ? `<div class="feedback fb-green" style="display:flex;gap:16px;flex-wrap:wrap;justify-content:space-around;text-align:center">
           <div><div class="h num" style="font-size:26px;font-weight:700">${n(m.kcal, 0)}</div><div class="small">kcal/dia</div></div>
@@ -1189,9 +1290,10 @@ async function finishWizard() {
     const now = new Date().toISOString();
     S().participant = { id: genCode(), email: d.email.trim().toLowerCase(), pinHash: await pinHash(d.email, d.pin), registeredAt: now, consentAt: now, consentText: consentText(), synced: false };
   }
+  if (S().participant && +d.edat < 14) S().participant.tutorConsent = !!d.tutor;
   const p = {
     nom: d.nom.trim(), sexe: d.sexe, edat: +d.edat, alcada: +d.alcada, pes: +d.pes, cintura: d.cintura === '' ? null : +d.cintura,
-    complexio: d.complexio, activitat: d.activitat, fa_esport: !!d.fa_esport, esports: d.fa_esport ? d.esports.map(e => ({ ...e })) : [],
+    complexio: d.complexio || '', mesures: d.mesures || '', tutor: +d.edat < 14 ? !!d.tutor : null, activitat: d.activitat, fa_esport: !!d.fa_esport, esports: d.fa_esport ? d.esports.map(e => ({ ...e })) : [],
     objectiu: d.objectiu, pes_objectiu: d.objectiu === 'mantenir' ? null : +d.pes_objectiu, data_objectiu: d.objectiu === 'mantenir' ? null : d.data_objectiu,
   };
   const t = todayStr();
@@ -2013,7 +2115,10 @@ function studyPayload(isNew) {
     const sp = (m.esports || []).map(e => `${SPORT[e.sport]?.label} ${e.dies}x${e.minuts}min ${e.intensitat}`).join('; ');
     body.dades = [p.sexe, p.edat, p.alcada, p.complexio, p.activitat, p.objectiu, p.pes_inicial ?? '', p.data_inicial ?? '', rr(currentWeight()), p.pes_objectiu ?? '', p.data_objectiu ?? '', currentWaist() ?? '',
       rr(m.imc.value, 2), rr(m.greix?.value), m.rca ? rr(m.rca.value, 3) : '', rr(m.mb, 0), rr(m.det, 0), rr(m.kcal, 0), rr(m.prot?.value, 0), rr(m.horesSetm), rr(m.espSetm, 0), sp,
-      (st.prefs || {}).dieta || 'mediterrania', st.entries.length, Object.keys(st.food).filter(d => st.food[d].length).length];
+      (st.prefs || {}).dieta || 'mediterrania', st.entries.length, Object.keys(st.food).filter(d => st.food[d].length).length,
+      FRANJA[m.franja] || '', m.imc.label, m.imc.z != null ? rr(m.imc.z, 2) : '', rr(m.pesMin), rr(m.pesMax), m.greix?.metode || '', m.mbMetode || '',
+      m.adj < 0 ? rr(-m.adjAsked, 0) : '', m.adj < 0 ? rr(-m.adj, 0) : '', m.defVal?.label || '', m.val?.label || '', m.ritmePct != null ? rr(m.ritmePct, 2) : '',
+      m.trec?.label || '', m.trec?.factor ?? '', m.trec ? rr(m.trec.det, 0) : '', rr(m.aigua, 1), MESURES[p.mesures]?.label || '', p.tutor == null ? '' : (p.tutor ? 'sí' : 'no')];
   }
   body.registres = sortedEntries().map(e => { const em = entryMetrics(e); return [e.date, e.pes, e.cintura || '', rr(em.imc, 2), rr(em.greix), em.rca ? rr(em.rca, 3) : '', e.sens?.energia || '', e.sens?.gana || '', e.sens?.son || '', e.obs || '']; });
   const sig = hashStr(JSON.stringify(st.food)); body._foodSig = sig;
@@ -2138,7 +2243,7 @@ document.addEventListener('input', e => {
   if (WZ.open && t.id === 'wzpin') { WZ.draft.pin = t.value.replace(/\D/g, '').slice(0, 4); t.value = WZ.draft.pin; updateNext(); }
   if (t.id === 'slpin') t.value = t.value.replace(/\D/g, '').slice(0, 4);
 });
-document.addEventListener('change', e => { if (WZ.open && e.target.id === 'wzcons') { WZ.draft.consent = e.target.checked; updateNext(); } });
+document.addEventListener('change', e => { if (!WZ.open) return; if (e.target.id === 'wzcons') { WZ.draft.consent = e.target.checked; updateNext(); } if (e.target.id === 'wztutor') { WZ.draft.tutor = e.target.checked; updateNext(); } });
 document.addEventListener('keydown', e => { if ($('#sl-ov') && e.key === 'Enter') { e.preventDefault(); doStudyLogin(); } if ($('#sl-ov') && e.key === 'Escape') $('#sl-ov').remove(); }, true);
 
 /* ---------- arrencada ---------- */

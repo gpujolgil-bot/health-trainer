@@ -14,7 +14,13 @@ Funciona com a pàgina estàtica a **GitHub Pages**, i les dades dels participan
   - menú del dia generat automàticament;
   - dietes desades;
   - «Quina dieta?»: qüestionari i catàleg de 9 dietes amb evidència i fonts.
-- **Menors d'edat**: fan el flux complet, però el dèficit calòric es limita a un màxim de 300 kcal/dia (o el 15 % de la despesa). No se'ls recomana el dejuni intermitent ni la dieta cetogènica.
+- **Càlculs per franges d'edat** (6–99 anys):
+  - *Infants (6–11)*: IMC per edat de l'OMS, metabolisme de Schofield, sense objectius de pes ni dèficit.
+  - *Adolescents (12–17)*: IMC per edat de l'OMS, Deurenberg infantil fins als 15 anys, dèficit màxim de 300 kcal/dia (o el 15 % de la despesa), sense dejuni ni dieta cetogènica.
+  - *Adults (18–64)*: IMC de l'OMS + IMC adaptat del TREC (sexe, edat i complexió).
+  - *65 anys o més*: rang d'IMC 22–26,9 (SEGG/SENPE); sense dieta per perdre pes si l'IMC és < 30; si hi ha obesitat, dèficit ≤ 500 kcal i mínim 1.200 kcal/dia (ESPEN).
+  - Per a tothom: valoració del dèficit del TREC, despesa pel mètode del TREC (factors 1,2–1,9) en paral·lel per comparar, aigua segons l'EFSA i proteïna segons edat i esport.
+- **Menors de 14 anys**: en mode estudi cal el consentiment del pare, mare o tutor.
 
 ## Fitxers
 
@@ -51,6 +57,8 @@ Per a l'anàlisi, fes servir les pestanyes que només porten el **codi** (HT-XXX
 
 > Si modifiques `Code.gs`, cal tornar a fer **Implementa → Gestiona les implementacions → Edita → Versió nova** perquè els canvis s'apliquin.
 
+**Si ja tenies el Full en marxa i actualitzes `Code.gs`:** enganxa el codi nou a l'editor d'Apps Script, desa, i a *Implementar → Gestionar implementacions → (llapis) → Versió: Nova versió → Implementar*. Així es manté la mateixa URL i les columnes noves s'afegeixen soles a la pestanya *Dades*.
+
 ### 2. `config.js`
 
 Posa l'URL a `endpoint` i omple els textos del consentiment: projecte, centre, responsables, contacte i termini de conservació. Si `endpoint` es deixa buit, l'app funciona en **mode demostració** i no envia res.
@@ -74,7 +82,7 @@ Es recullen correus i dades de salut (pes, % de greix, alimentació, condicions 
 ## Fonts
 
 - Base d'aliments: **BEDCA** (Base de Datos Española de Composición de Alimentos). S'han corregit 9 aliments cuits que a BEDCA tenen valors de cru (marcats amb `*`).
-- Fórmules: Mifflin-St Jeor (metabolisme basal), Deurenberg (% de greix) i METs del *Compendium of Physical Activities*.
+- Fórmules: Mifflin-St Jeor i Schofield (metabolisme basal), Deurenberg 1991 infantil i d'adult (% de greix), IMC per edat de l'OMS 2007 (taules LMS, extretes del paquet obert `rcpchgrowth`), classificació SEGG/SENPE per a 65+, guia ESPEN d'obesitat en gent gran, PROT-AGE (proteïna), EFSA 2010 (aigua) i METs del *Compendium of Physical Activities*.
 - Dietes:
   - PREDIMED, ASPCAT «Petits canvis per menjar millor» i AESAN 2022;
   - Harvard Nutrition Source (DASH, keto);
