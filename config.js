@@ -2,7 +2,7 @@
    Omple aquests camps abans de publicar l'app a GitHub Pages. */
 window.HT_CONFIG = {
   // URL de l'aplicació web d'Apps Script (acaba en /exec). Buit = mode demostració, sense enviar dades.
-  endpoint: '',
+  endpoint: 'https://script.google.com/macros/s/AKfycbw4YTwVf1GSUmT-6Qyr5MRfS3Z2uc4YLkBlV_XCNZMvlnBWA5ZihyKkH3soeVF5uz7f/exec',
 
   // Si és true, cada participant s'ha de registrar amb correu, PIN i consentiment.
   estudi: true,
