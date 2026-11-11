@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Health Trainer 2.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --brand:#0F4C3A; --brand-2:#0A3629; --mint:#34D399; --mint-50:#ECFDF5; --mint-100:#D1FAE5;
+  --bg:#F6F8F5; --card:#fff; --ink:#0F172A; --ink-2:#334155; --muted:#64748B; --faint:#94A3B8; --line:#E2E8F0;
+  --green:#22C55E; --orange:#F59E0B; --red:#EF4444; --blue:#3B82F6; --violet:#8B5CF6;
+  --r:18px; --shadow:0 1px 2px rgba(15,23,42,.04),0 4px 16px rgba(15,23,42,.05);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:15px;-webkit-font-smoothing:antialiased}
+h1,h2,h3,.h{font-family:Outfit,Inter,sans-serif;letter-spacing:-.01em;margin:0}
+.num{font-variant-numeric:tabular-nums}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font:inherit;color:inherit}
+a{color:var(--brand)}
+.hidden{display:none!important}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+.side{position:sticky;top:0;height:100vh;background:#fff;border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:28px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .logo{width:38px;height:38px;border-radius:12px;background:var(--brand);display:grid;place-items:center;color:var(--mint);font-size:19px}
+.brand b{font-family:Outfit;font-size:16px;color:var(--brand);display:block;letter-spacing:.02em}
+.brand small{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;text-decoration:none;color:var(--ink-2);font-weight:500;font-size:14px;transition:background .15s}
+.nav a:hover{background:var(--mint-50);color:var(--brand)}
+.nav a.on{background:var(--brand);color:#fff}
+.nav a .ic{width:20px;text-align:center}
+.side-foot{margin-top:auto;background:#F0F4F1;border-radius:16px;padding:14px;font-size:13px}
+.side-foot .who{font-weight:600}
+.sync{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-top:6px}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--faint);display:inline-block}
+.sync.cloud i{background:var(--green)}
+main{min-width:0}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:rgba(246,248,245,.85);backdrop-filter:blur(14px);border-bottom:1px solid rgba(226,232,240,.7)}
+.top .eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+.top .mbrand{display:none}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 32px 120px}
+.bottom-nav{display:none}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .side{display:none}
+  .top{padding:12px 16px}
+  .top .mbrand{display:flex}
+  .top .eyebrow{display:none}
+  .wrap{padding:20px 16px 110px}
+  .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;background:#fff;border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+  .bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;font-size:11px;font-weight:600;color:var(--muted);text-decoration:none;border-radius:12px}
+  .bottom-nav a .ic{font-size:19px}
+  .bottom-nav a.on{color:var(--brand);background:var(--mint-50)}
+}
+
+/* ---------- generic ---------- */
+.ph{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px}
+.ph .eb{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#047857}
+.ph h1{font-size:32px;margin-top:6px}
+.ph p{color:var(--muted);margin:6px 0 0;max-width:640px}
+.panel{background:var(--card);border:1px solid rgba(226,232,240,.8);border-radius:var(--r);padding:22px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1100px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:700px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 22px;border-radius:999px;background:var(--brand);color:#fff;font-weight:600;font-size:14px;transition:transform .15s,background .15s,opacity .15s}
+.btn:hover{background:var(--brand-2)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.35;pointer-events:none}
+.btn.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--line)}
+.btn.ghost:hover{background:#fff}
+.btn.light{background:#fff;color:var(--brand)}
+.btn.sm{height:36px;padding:0 14px;font-size:13px}
+.btn.danger{background:#fff;color:#B91C1C;border:1px solid #FECACA}
+.link{color:var(--brand);font-weight:600;font-size:13px}
+.link:hover{text-decoration:underline}
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:600}
+.badge i{width:6px;height:6px;border-radius:50%;display:inline-block}
+.b-green{background:#DCFCE7;color:#166534}.b-green i{background:var(--green)}
+.b-orange{background:#FEF3C7;color:#92400E}.b-orange i{background:var(--orange)}
+.b-red{background:#FEE2E2;color:#991B1B}.b-red i{background:var(--red)}
+.b-info{background:#F1F5F9;color:#475569}.b-info i{background:#CBD5E1}
+.muted{color:var(--muted)}.faint{color:var(--faint)}
+.small{font-size:12px}
+.sec-label{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#047857;margin:0 0 12px}
+
+/* tabs */
+.tabs{display:inline-flex;flex-wrap:wrap;gap:4px;background:#fff;border-radius:999px;padding:4px;box-shadow:var(--shadow);border:1px solid var(--line);margin-bottom:18px}
+.tabs button{padding:8px 16px;border-radius:999px;font-size:13px;font-weight:500;color:var(--ink-2)}
+.tabs button.on{background:var(--brand);color:#fff}
+
+/* metric card */
+.mc{position:relative;overflow:hidden;background:#fff;border:1px solid rgba(226,232,240,.8);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow);animation:fadeUp .4s both}
+.mc .bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+.mc .t{display:flex;justify-content:space-between;gap:8px;font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.mc .v{font-family:Outfit;font-size:28px;font-weight:700;margin-top:10px}
+.mc .v small{font-family:Inter;font-size:13px;font-weight:500;color:var(--faint);margin-left:4px}
+.mc .row{margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+.mc .hint{margin-top:10px;font-size:12px;color:var(--faint);line-height:1.45}
+.mc .why{font-size:11px;color:var(--brand);font-weight:600;margin-top:8px}
+.mc details summary{list-style:none;cursor:pointer}
+.mc details summary::-webkit-details-marker{display:none}
+.mc details p{font-size:12px;color:var(--muted);line-height:1.5;margin:6px 0 0}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* range bar */
+.rb{margin-top:14px}
+.rb .track{position:relative;height:9px;border-radius:999px;background:#F1F5F9;overflow:hidden}
+.rb .seg{position:absolute;top:0;height:100%;opacity:.8}
+.rb .mk{position:relative;height:0}
+.rb .mk span{position:absolute;top:-15px;width:3px;height:21px;border-radius:3px;background:var(--ink);box-shadow:0 0 0 2px #fff;transform:translateX(-50%);transition:left .6s cubic-bezier(.2,.8,.2,1)}
+.rb .lbl{display:flex;justify-content:space-between;margin-top:8px;font-size:10px;font-weight:500;color:var(--muted)}
+.rb .lbl b{color:var(--ink)}
+
+/* hero */
+.hero{background:var(--brand);color:#fff;border-radius:22px;padding:26px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-80px;top:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(52,211,153,.35),transparent 70%)}
+.hero .k{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#6EE7B7}
+.hero .big{font-family:Outfit;font-size:42px;font-weight:700;line-height:1}
+.hero .big small{font-family:Inter;font-size:15px;color:#A7F3D0;font-weight:500;margin-left:6px}
+.prog{height:10px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:14px}
+.prog div{height:100%;border-radius:999px;background:linear-gradient(90deg,#34D399,#6EE7B7);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.hero .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.hero .chip{background:rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;min-width:110px}
+.hero .chip b{font-family:Outfit;font-size:18px;display:block}
+.hero .chip span{font-size:11px;color:#A7F3D0}
+.hero-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:22px;position:relative;z-index:1;align-items:center}
+@media (max-width:800px){.hero-grid{grid-template-columns:1fr}#todayfood,#fsum{grid-template-columns:1fr!important;justify-items:stretch}#fsum>div:first-child{justify-self:center}}
+
+/* energy stack */
+.stack{display:flex;height:34px;border-radius:12px;overflow:hidden;margin-top:12px}
+.stack div{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;transition:flex .6s}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+/* list rows */
+.srow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F1F5F9}
+.srow:last-child{border:0}
+.srow .em{width:38px;height:38px;border-radius:12px;background:var(--mint-50);display:grid;place-items:center;font-size:19px;flex-shrink:0}
+.srow .bar2{height:6px;border-radius:999px;background:#F1F5F9;margin-top:6px;overflow:hidden}
+.srow .bar2 div{height:100%;background:var(--mint);border-radius:999px}
+
+/* table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:600;padding:8px 12px 8px 0;border-bottom:1px solid var(--line)}
+td{padding:10px 12px 10px 0;border-bottom:1px solid #F1F5F9;white-space:nowrap}
+tr:last-child td{border:0}
+.tscroll{overflow-x:auto}
+.delta-down{color:#15803D;font-weight:600}.delta-up{color:#B45309;font-weight:600}
+.icon-btn{width:32px;height:32px;border-radius:10px;display:inline-grid;place-items:center;color:var(--faint)}
+.icon-btn:hover{background:#FEF2F2;color:#DC2626}
+
+/* insights */
+.ins{background:#fff;border:1px solid rgba(226,232,240,.8);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
+.ins .l{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ins .v{font-family:Outfit;font-size:24px;font-weight:700;margin-top:6px}
+.ins .s{font-size:12px;color:var(--muted);margin-top:4px}
+.chart-box{position:relative;height:280px}
+.chart-box.sm{height:190px}
+.seg-ctl{display:inline-flex;background:#F1F5F9;border-radius:999px;padding:3px}
+.seg-ctl button{padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600;color:var(--muted)}
+.seg-ctl button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* empty / callouts */
+.callout{border-radius:16px;padding:14px 16px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.callout.amber{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
+.callout.mint{background:var(--mint-50);color:#065F46;border:1px solid var(--mint-100)}
+.empty{text-align:center;padding:40px 20px;border:1.5px dashed #CBD5E1;border-radius:var(--r);background:#fff;color:var(--muted)}
+
+/* ---------- wizard ---------- */
+.wz{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;grid-template-columns:1fr 360px;overflow:hidden}
+.wz-main{display:flex;flex-direction:column;min-height:0;overflow-y:auto}
+.wz-head{display:flex;align-items:center;gap:14px;padding:18px 28px}
+.wz-progress{flex:1;height:6px;border-radius:999px;background:#E2E8F0;overflow:hidden}
+.wz-progress div{height:100%;background:var(--brand);border-radius:999px;transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.wz-sec{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#047857;min-width:80px;text-align:right}
+.wz-close{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:var(--muted);border:1px solid var(--line);background:#fff}
+.wz-body{flex:1;display:flex;justify-content:center;padding:20px 28px 40px}
+.wz-step{width:100%;max-width:620px;animation:stepIn .35s cubic-bezier(.2,.8,.2,1) both}
+.wz-step.back{animation-name:stepBack}
+@keyframes stepIn{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes stepBack{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+.wz-q{font-family:Outfit;font-size:34px;font-weight:700;line-height:1.12;margin:18px 0 8px}
+.wz-sub{color:var(--muted);font-size:15px;line-height:1.5;margin:0 0 26px}
+.wz-foot{position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 28px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 30%)}
+.wz-foot .btn{min-width:150px;height:52px;font-size:15px}
+.kbd{font-size:11px;color:var(--faint)}
+.kbd b{border:1px solid var(--line);border-radius:6px;padding:1px 6px;background:#fff;font-weight:600}
+
+.opts{display:grid;gap:12px}
+.opts.c2{grid-template-columns:repeat(2,1fr)}
+.opts.c3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:600px){.opts.c3{grid-template-columns:1fr}.opts.c2.keep{grid-template-columns:repeat(2,1fr)}.opts.c2:not(.keep){grid-template-columns:1fr}}
+.opt{display:flex;gap:14px;align-items:flex-start;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:16px;transition:border-color .15s,background .15s,transform .15s}
+.opt:hover{border-color:#86EFAC}
+.opt:active{transform:scale(.985)}
+.opt.on{border-color:var(--brand);background:var(--mint-50);box-shadow:0 0 0 1px var(--brand)}
+.opt .em{font-size:26px;line-height:1}
+.opt b{display:block;font-family:Outfit;font-size:16px;font-weight:600}
+.opt p{margin:4px 0 0;font-size:13px;color:var(--muted);line-height:1.45}
+.opt .tag{display:inline-block;margin-top:8px;font-size:11px;font-weight:600;color:var(--brand);background:rgba(15,76,58,.08);border-radius:999px;padding:2px 8px}
+.opt .key{margin-left:auto;font-size:11px;color:var(--faint);border:1px solid var(--line);border-radius:6px;padding:0 6px;height:20px;line-height:18px}
+
+.bignum{display:flex;align-items:center;gap:12px}
+.bignum .pm{width:56px;height:56px;border-radius:16px;background:#fff;border:1.5px solid var(--line);font-size:24px;font-weight:600;color:var(--ink-2);flex-shrink:0}
+.bignum .pm:hover{border-color:var(--brand);color:var(--brand)}
+.bignum .field{flex:1;position:relative}
+.bignum input{width:100%;height:76px;border-radius:18px;border:1.5px solid var(--line);background:#fff;font-family:Outfit;font-size:38px;font-weight:700;text-align:center;padding:0 64px;outline:none;-moz-appearance:textfield}
+.bignum input::-webkit-outer-spin-button,.bignum input::-webkit-inner-spin-button{-webkit-appearance:none}
+.bignum input:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(15,76,58,.1)}
+.bignum .u{position:absolute;right:22px;top:50%;transform:translateY(-50%);color:var(--faint);font-weight:600}
+input[type=range]{width:100%;margin-top:22px;accent-color:var(--brand)}
+.txt{width:100%;height:60px;border-radius:16px;border:1.5px solid var(--line);background:#fff;padding:0 20px;font-size:20px;outline:none}
+.txt:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(15,76,58,.1)}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.quick button{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.quick button:hover,.quick button.on{border-color:var(--brand);color:var(--brand);background:var(--mint-50)}
+.feedback{margin-top:20px;border-radius:16px;padding:14px 16px;font-size:14px;line-height:1.5}
+.fb-green{background:#F0FDF4;color:#166534;border:1px solid #BBF7D0}
+.fb-orange{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
+.fb-red{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA}
+.fb-info{background:#F8FAFC;color:var(--ink-2);border:1px solid var(--line)}
+
+.search{width:100%;height:48px;border-radius:14px;border:1.5px solid var(--line);background:#fff;padding:0 16px 0 42px;outline:none;font-size:15px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%2394A3B8' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:14px center}
+.search:focus{border-color:var(--brand)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chipx{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:9px 14px;font-size:14px;font-weight:500;transition:all .15s}
+.chipx:hover{border-color:#86EFAC}
+.chipx.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.cat{font-size:12px;font-weight:700;color:var(--ink-2);margin:20px 0 10px}
+.sel-bar{position:sticky;top:0;z-index:2;background:var(--bg);padding:8px 0 12px}
+.daypick{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.daypick button{height:56px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font-family:Outfit;font-size:20px;font-weight:700}
+.daypick button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.sub-q{font-family:Outfit;font-size:17px;font-weight:600;margin:26px 0 12px}
+.sport-head{display:flex;align-items:center;gap:14px;margin-top:14px}
+.sport-head .em{width:58px;height:58px;border-radius:18px;background:var(--mint-50);display:grid;place-items:center;font-size:30px}
+.sport-head .counter{font-size:12px;color:var(--muted)}
+
+.wz-side{background:#fff;border-left:1px solid var(--line);padding:26px 22px;overflow-y:auto}
+.wz-side h3{font-size:18px}
+.live{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.live .it{border:1px solid var(--line);border-radius:14px;padding:12px 14px;transition:all .3s}
+.live .it .l{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.live .it .v{font-family:Outfit;font-size:22px;font-weight:700;margin-top:2px}
+.live .it .v small{font-family:Inter;font-size:12px;color:var(--faint);font-weight:500}
+.live .it.locked{background:#F8FAFC;border-style:dashed}
+.live .it.locked .v{font-size:13px;color:var(--faint);font-family:Inter;font-weight:500}
+.live .it.pop{animation:pop .5s}
+@keyframes pop{0%{transform:scale(.96);background:var(--mint-50)}100%{transform:none}}
+.wz-mini{display:none}
+@media (max-width:980px){
+  .wz{grid-template-columns:1fr}
+  .wz-side{display:none}
+  .wz-head{padding:14px 16px}
+  .wz-body{padding:8px 18px 24px}
+  .wz-q{font-size:27px}
+  .wz-foot{padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+  .wz-foot .btn{min-width:0;flex:1}
+  .kbd{display:none}
+  .wz-mini{display:flex;gap:8px;overflow-x:auto;padding:0 16px 4px}
+  .wz-mini span{flex-shrink:0;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:12px;color:var(--ink-2)}
+  .wz-mini span b{font-family:Outfit}
+}
+.wz-step label.small,.modal label.small{display:block}
+.consent{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px;font-size:13px;line-height:1.5;color:var(--ink-2);cursor:pointer}
+.consent input{width:20px;height:20px;margin-top:2px;accent-color:var(--brand);flex-shrink:0}
+.recap{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden}
+.recap button{display:flex;justify-content:space-between;gap:12px;padding:13px 16px;border-bottom:1px solid #F1F5F9;text-align:left;font-size:14px}
+.recap button:last-child{border:0}
+.recap button:hover{background:#F8FAFC}
+.recap button span{color:var(--muted)}
+.recap button b{font-weight:600;text-align:right}
+.recap button b::after{content:"  ✎";color:var(--faint);font-weight:400}
+
+/* ---------- modal (check-in) ---------- */
+.ov{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.45);display:grid;place-items:center;padding:16px;animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.modal{width:100%;max-width:520px;background:var(--bg);border-radius:24px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.25);animation:rise .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes rise{from{transform:translateY(24px);opacity:0}}
+.modal .mh{display:flex;align-items:center;gap:12px;padding:18px 20px 0}
+.modal .mb{padding:4px 22px 8px}
+.modal .mf{display:flex;justify-content:space-between;gap:10px;padding:16px 22px 22px}
+.modal .wz-q{font-size:26px;margin-top:12px}
+.dots{display:flex;gap:6px;flex:1}
+.dots i{height:5px;flex:1;border-radius:999px;background:#E2E8F0;transition:background .3s}
+.dots i.on{background:var(--brand)}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.scale button{height:58px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font-size:24px;transition:all .15s}
+.scale button.on{border-color:var(--brand);background:var(--mint-50);transform:scale(1.04)}
+.scale-l{display:flex;justify-content:space-between;font-size:11px;color:var(--faint);margin-top:6px}
+.delta-pill{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600}
+textarea.txt{height:90px;padding:14px 16px;font-size:15px;resize:none}
+input.date{height:48px;border-radius:14px;border:1.5px solid var(--line);background:#fff;padding:0 14px;font-size:15px;outline:none}
+@media (max-width:600px){.ov{align-items:end;padding:0}.modal{border-radius:24px 24px 0 0}}
+
+/* toast */
+.toasts{position:fixed;bottom:22px;right:22px;z-index:80;display:flex;flex-direction:column;gap:10px}
+.toast{background:var(--ink);color:#fff;border-radius:14px;padding:12px 16px;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);display:flex;gap:14px;align-items:center;animation:rise .3s}
+.toast button{color:#6EE7B7;font-weight:700}
+@media (max-width:900px){.toasts{top:14px;bottom:auto;left:16px;right:16px}}
+
+/* welcome */
+.welcome{min-height:100vh;display:grid;place-items:center;padding:24px}
+.welcome .card{max-width:560px;text-align:center}
+.welcome h1{font-size:44px;line-height:1.05;margin:22px 0 12px}
+.welcome p{color:var(--muted);font-size:16px;line-height:1.6}
+.welcome .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:26px 0;text-align:left}
+.welcome .feats div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;font-size:12px;color:var(--muted)}
+.welcome .feats b{display:block;color:var(--ink);font-size:13px;margin-bottom:2px}
+@media (max-width:600px){.welcome .feats{grid-template-columns:1fr}.welcome h1{font-size:34px}}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toasts" id="toasts"></div>
+
+<script src="config.js"></script>
+<script src="foods.js"></script>
+<script>
+/* =========================================================
+   Health Trainer 2.0 — prototip millorat
+   Tot el càlcul és al bloc CALC. Si el backend original fa servir
+   altres coeficients, només cal canviar-los aquí.
+   ========================================================= */
+
+/* ---------- utilitats ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n = (v, d = 1) => v == null || isNaN(v) ? '—' : Number(v).toLocaleString('ca-ES', { maximumFractionDigits: d, minimumFractionDigits: 0 });
+const nf = (v, d = 1) => v == null || isNaN(v) ? '—' : Number(v).toLocaleString('ca-ES', { maximumFractionDigits: d, minimumFractionDigits: d });
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const DAY = 86400000;
+const todayStr = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const ts = s => Date.parse(s + 'T00:00:00');
+const addDays = (s, k) => { const d = new Date(ts(s) + k * DAY); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const fmtDate = s => s ? new Date(ts(s)).toLocaleDateString('ca-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+const fmtShort = s => s ? new Date(ts(s)).toLocaleDateString('ca-ES', { day: 'numeric', month: 'short' }) : '—';
+const validDate = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && +s.slice(0, 4) >= new Date().getFullYear() && +s.slice(0, 4) <= new Date().getFullYear() + 5 && !isNaN(Date.parse(s));
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+const clone = o => JSON.parse(JSON.stringify(o));
+
+/* ---------- dades de referència ---------- */
+const SPORTS = [
+  { id: 'futbol', label: 'Futbol', cat: "Esports d'equip", met: 7, em: '⚽' },
+  { id: 'basquet', label: 'Bàsquet', cat: "Esports d'equip", met: 6.5, em: '🏀' },
+  { id: 'handbol', label: 'Handbol', cat: "Esports d'equip", met: 8, em: '🤾' },
+  { id: 'hoquei', label: 'Hoquei patins', cat: "Esports d'equip", met: 7.5, em: '🏑' },
+  { id: 'voleibol', label: 'Voleibol', cat: "Esports d'equip", met: 4, em: '🏐' },
+  { id: 'waterpolo', label: 'Waterpolo', cat: "Esports d'equip", met: 10, em: '🤽' },
+  { id: 'rugbi', label: 'Rugbi', cat: "Esports d'equip", met: 8.3, em: '🏉' },
+  { id: 'correr', label: 'Córrer', cat: 'Resistència', met: 9.8, em: '🏃' },
+  { id: 'ciclisme', label: 'Ciclisme', cat: 'Resistència', met: 7.5, em: '🚴' },
+  { id: 'natacio', label: 'Natació', cat: 'Resistència', met: 8, em: '🏊' },
+  { id: 'caminar', label: 'Caminar ràpid', cat: 'Resistència', met: 4.3, em: '🚶' },
+  { id: 'senderisme', label: 'Senderisme', cat: 'Resistència', met: 6, em: '🥾' },
+  { id: 'rem', label: 'Rem / caiac', cat: 'Resistència', met: 7, em: '🚣' },
+  { id: 'forca', label: 'Força / pesos', cat: 'Gimnàs', met: 5, em: '🏋️' },
+  { id: 'hiit', label: 'HIIT', cat: 'Gimnàs', met: 8, em: '🔥' },
+  { id: 'crossfit', label: 'CrossFit', cat: 'Gimnàs', met: 8, em: '💪' },
+  { id: 'spinning', label: 'Spinning', cat: 'Gimnàs', met: 8.5, em: '🚲' },
+  { id: 'kettlebell', label: 'Kettlebells', cat: 'Gimnàs', met: 9.8, em: '🔔' },
+  { id: 'pilates', label: 'Pilates', cat: 'Gimnàs', met: 3, em: '🧘' },
+  { id: 'ioga', label: 'Ioga', cat: 'Gimnàs', met: 2.5, em: '🕉️' },
+  { id: 'tennis', label: 'Tennis', cat: 'Raqueta', met: 7.3, em: '🎾' },
+  { id: 'padel', label: 'Pàdel', cat: 'Raqueta', met: 6, em: '🏓' },
+  { id: 'badminton', label: 'Bàdminton', cat: 'Raqueta', met: 5.5, em: '🏸' },
+  { id: 'judo', label: 'Judo / karate', cat: 'Combat', met: 10, em: '🥋' },
+  { id: 'boxa', label: 'Boxa', cat: 'Combat', met: 9, em: '🥊' },
+  { id: 'dansa', label: 'Dansa', cat: 'Altres', met: 5.5, em: '💃' },
+  { id: 'escalada', label: 'Escalada', cat: 'Altres', met: 8, em: '🧗' },
+  { id: 'patinatge', label: 'Patinatge', cat: 'Altres', met: 7, em: '⛸️' },
+  { id: 'esqui', label: 'Esquí', cat: 'Altres', met: 7, em: '⛷️' },
+  { id: 'surf', label: 'Surf / pàdel surf', cat: 'Altres', met: 5, em: '🏄' },
+];
+const SPORT = Object.fromEntries(SPORTS.map(s => [s.id, s]));
+const INTENS = {
+  suau: { label: 'Suau', mult: 0.8, em: '🙂', desc: 'Pots parlar sense problema.' },
+  moderada: { label: 'Moderada', mult: 1, em: '😅', desc: 'Parles amb frases curtes.' },
+  intensa: { label: 'Intensa', mult: 1.2, em: '🥵', desc: 'Gairebé no pots parlar.' },
+};
+// Factors NEAT (sense esport). L'esport se suma a part per no comptar-lo dues vegades.
+const ACT = {
+  sedentari: { label: 'Sedentari', factor: 1.2, em: '🪑', desc: 'Feina o estudis asseguts i camines poc.', tag: '< 5.000 passos' },
+  lleuger: { label: 'Lleugerament actiu', factor: 1.3, em: '🚶', desc: 'Assegut, però camines sovint durant el dia.', tag: '5.000–8.000 passos' },
+  actiu: { label: 'Actiu', factor: 1.4, em: '🧍', desc: 'Passes bona part del dia dret o caminant.', tag: '8.000–12.000 passos' },
+  molt: { label: 'Molt actiu', factor: 1.55, em: '🏗️', desc: 'Feina física exigent (obra, magatzem, hostaleria…).', tag: '> 12.000 passos' },
+};
+const GOALS = {
+  perdre: { label: 'Perdre greix', em: '📉', desc: 'Baixar de pes conservant múscul.' },
+  mantenir: { label: 'Mantenir-me', em: '⚖️', desc: 'Estabilitzar el pes actual.' },
+  guanyar: { label: 'Guanyar múscul', em: '💪', desc: 'Superàvit petit + entrenament de força.' },
+  guanyar_pes: { label: 'Guanyar pes', em: '📈', desc: 'Augmentar pes de forma saludable.' },
+};
+const COMPLEX = {
+  prima: { label: 'Constitució petita', desc: 'Els dits se superposen.', em: '🤏' },
+  normal: { label: 'Constitució mitjana', desc: 'Els dits just es toquen.', em: '👌' },
+  robusta: { label: 'Constitució gran', desc: 'Els dits no arriben a tocar-se.', em: '✋' },
+};
+const SEX = { home: 'Home', dona: 'Dona' };
+const STATUS = {
+  green: { label: 'Saludable', cls: 'b-green', col: '#22C55E' },
+  orange: { label: 'Vigilar', cls: 'b-orange', col: '#F59E0B' },
+  red: { label: 'Risc elevat', cls: 'b-red', col: '#EF4444' },
+  info: { label: 'Informatiu', cls: 'b-info', col: '#CBD5E1' },
+};
+
+/* =========================================================
+   CALC — fórmules
+   ========================================================= */
+function sportKcal(e, pes) { // kcal nets per setmana (MET − 1 per no duplicar el basal)
+  const s = SPORT[e.sport]; if (!s || !pes) return 0;
+  const met = s.met * (INTENS[e.intensitat]?.mult || 1);
+  return Math.max(0, met - 1) * pes * (e.dies * e.minuts / 60);
+}
+function fatRange(sexe, edat) { // Gallagher et al. 2000 (aprox.)
+  const t = sexe === 'home'
+    ? (edat < 40 ? [8, 19] : edat < 60 ? [11, 21] : [13, 24])
+    : (edat < 40 ? [21, 32] : edat < 60 ? [23, 33] : [24, 35]);
+  return { min: t[0], max: t[1], risc: t[1] + 6 };
+}
+function calc(d, opts = {}) {
+  const m = {};
+  const pes = +opts.pes || +d.pes || null;
+  const cintura = +opts.cintura || +d.cintura || null;
+  const alc = +d.alcada || null, edat = +d.edat || null;
+  m.pes = pes;
+  if (alc && pes) {
+    const h = alc / 100;
+    const imc = pes / (h * h);
+    m.imc = { value: imc, status: imc < 18.5 ? 'orange' : imc < 25 ? 'green' : imc < 30 ? 'orange' : 'red',
+      label: imc < 18.5 ? 'Pes baix' : imc < 25 ? 'Normopès' : imc < 30 ? 'Sobrepès' : 'Obesitat' };
+    const f = ({ prima: -1, normal: 0, robusta: 1 }[d.complexio] || 0) + (edat >= 45 ? 1 : 0) + (edat >= 65 ? 1 : 0);
+    const amin = 18.5 + 0.5 * f, amax = 24.9 + f;
+    m.imcAdapt = { min: amin, max: amax, factor: f, status: imc < amin ? 'orange' : imc <= amax ? 'green' : imc <= amax + 5 ? 'orange' : 'red',
+      label: imc < amin ? 'Per sota del rang' : imc <= amax ? 'Dins del teu rang' : 'Per sobre del rang' };
+    m.pesMin = amin * h * h; m.pesMax = amax * h * h;
+    if (cintura) {
+      const rca = cintura / alc;
+      m.rca = { value: rca, status: rca < 0.4 ? 'orange' : rca < 0.5 ? 'green' : rca < 0.6 ? 'orange' : 'red',
+        label: rca < 0.4 ? 'Molt baixa' : rca < 0.5 ? 'Saludable' : rca < 0.6 ? 'Risc augmentat' : 'Risc alt',
+        corr: rca < 0.5 ? 0 : rca < 0.55 ? 1 : rca < 0.6 ? 2 : 3 };
+    }
+    if (d.sexe && edat) {
+      const deur = 1.2 * imc + 0.23 * edat - 10.8 * (d.sexe === 'home' ? 1 : 0) - 5.4;
+      const g = clamp(deur + (m.rca?.corr || 0), 3, 70);
+      const r = fatRange(d.sexe, edat);
+      m.greix = { value: g, deur, corr: m.rca?.corr || 0, ...r, status: g < r.min ? 'orange' : g <= r.max ? 'green' : g <= r.risc ? 'orange' : 'red',
+        label: g < r.min ? 'Per sota' : g <= r.max ? 'Saludable' : g <= r.risc ? 'Elevat' : 'Molt elevat' };
+      m.grassa = pes * g / 100; m.magra = pes - m.grassa;
+      m.mb = 10 * pes + 6.25 * alc - 5 * edat + (d.sexe === 'home' ? 5 : -161);
+    }
+  }
+  if (m.mb && d.activitat) {
+    m.neat = m.mb * (ACT[d.activitat].factor - 1);
+    const sp = (d.fa_esport ? d.esports || [] : []).map(e => ({ ...e, kcal: sportKcal(e, pes), hores: e.dies * e.minuts / 60 }));
+    m.esports = sp; m.espSetm = sp.reduce((a, b) => a + b.kcal, 0); m.espDia = m.espSetm / 7;
+    m.horesSetm = sp.reduce((a, b) => a + b.hores, 0);
+    m.det = m.mb + m.neat + m.espDia;
+  }
+  if (m.det && d.objectiu) {
+    let adj = { perdre: -500, mantenir: 0, guanyar: 250, guanyar_pes: 400 }[d.objectiu];
+    let ritme = null, dies = null, warn = null;
+    const objPes = +d.pes_objectiu;
+    if (d.objectiu !== 'mantenir' && objPes && d.data_objectiu) {
+      dies = Math.round((ts(d.data_objectiu) - ts(opts.today || todayStr())) / DAY);
+      if (dies > 0) {
+        const delta = objPes - pes;
+        adj = delta * 7700 / dies;
+        ritme = delta / (dies / 7);
+        if (d.objectiu === 'perdre' && delta >= 0) warn = 'El pes objectiu no és inferior al pes actual.';
+        if ((d.objectiu === 'guanyar' || d.objectiu === 'guanyar_pes') && delta <= 0) warn = 'El pes objectiu no és superior al pes actual.';
+      } else warn = 'La data objectiu ja ha passat.';
+    }
+    // Menors: es fa tot el flux, però el dèficit diari es limita (màx. 300 kcal o 15 % de la despesa).
+    const minor = edat && edat < 18 && adj < 0;
+    const capMin = minor ? -Math.min(300, m.det * 0.15) : null;
+    const capped = minor && adj < capMin;
+    if (capped) adj = capMin;
+    m.minor = !!minor; m.capped = !!capped;
+    m.adj = adj; m.kcal = m.det + adj; m.ritme = ritme; m.dies = dies;
+    const pct = ritme != null ? Math.abs(ritme) / pes * 100 : null;
+    m.ritmePct = pct;
+    const loss = d.objectiu === 'perdre';
+    let st = 'green', lab = 'Objectiu realista';
+    if (pct != null) {
+      if (loss) { if (pct > 1) { st = 'red'; lab = 'Ritme massa ràpid'; } else if (pct > 0.75) { st = 'orange'; lab = 'Ritme exigent'; } }
+      else { if (pct > 0.5) { st = 'red'; lab = 'Ritme massa ràpid'; } else if (pct > 0.25) { st = 'orange'; lab = 'Ritme exigent'; } }
+    }
+    if (m.kcal < m.mb) { st = 'red'; lab = 'Per sota del metabolisme basal'; }
+    if (warn) { st = 'orange'; lab = 'Revisa l\'objectiu'; }
+    if (d.objectiu === 'mantenir') { lab = 'Manteniment'; }
+    if (capped) { st = 'orange'; lab = `Menor d'edat: dèficit limitat a ${Math.round(-capMin)} kcal/dia`; }
+    m.val = { status: st, label: lab, warn };
+    // data realista
+    if (objPes && d.objectiu !== 'mantenir') {
+      const wk = Math.abs(objPes - pes) / (pes * (loss ? 0.0065 : 0.0022));
+      m.dataRealista = addDays(opts.today || todayStr(), Math.ceil(wk * 7));
+    }
+    const ref = m.imc && m.imc.value >= 30 && m.pesMax ? m.pesMax : pes;
+    const gkg = { perdre: 1.8, mantenir: 1.4, guanyar: 2.0, guanyar_pes: 1.6 }[d.objectiu];
+    m.prot = { value: ref * gkg, gkg, ref };
+    m.aigua = pes * 0.035 + (m.horesSetm || 0) / 7 * 0.5;
+  }
+  return m;
+}
+
+/* =========================================================
+   STORE — db (núvol, per usuari) + localStorage de reserva
+   ========================================================= */
+const LS_KEY = 'ht2-state';
+const EMPTY_STATE = () => ({ profile: null, entries: [], history: [], food: {}, diets: [], prefs: {}, favs: [], plan: null, v: 2 });
+const ensureState = s => { const e = EMPTY_STATE(); for (const k in e) if (s[k] === undefined) s[k] = e[k]; return s; };
+const Store = {
+  state: EMPTY_STATE(), mode: 'local', ref: null, writing: Promise.resolve(),
+  loadLocal() { try { const s = JSON.parse(localStorage.getItem(LS_KEY)); if (s && s.v === 2) this.state = ensureState(s); } catch (e) {} },
+  async connect() {
+    try {
+      if (!window.claude || !window.claude.use) return;
+      const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+      if (!db || !user) return;
+      const id = await user.id(); if (!id) return;
+      this.ref = db.doc('data/users/' + id + '/healthtrainer');
+      const snap = await Promise.race([this.ref.get(), new Promise((_, r) => setTimeout(() => r('timeout'), 10000))]);
+      if (snap.exists) {
+        const remote = snap.data();
+        if (remote && remote.v === 2) this.state = ensureState(clone(remote));
+      } else if (this.state.profile || this.state.entries.length) {
+        await this.ref.set(clone(this.state)); // puja el que hi hagi en local
+      }
+      this.mode = 'cloud';
+      this.saveLocal();
+      render();
+    } catch (e) { this.ref = null; this.mode = 'local'; }
+  },
+  saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(this.state)); } catch (e) {} },
+  save() {
+    this.saveLocal();
+    if (this.ref) {
+      const data = clone(this.state);
+      this.writing = this.writing.then(() => this.ref.set(data)).catch(err => {
+        if (err && err.code === 'invalid_argument') { this.ref = null; this.mode = 'local'; renderSync(); }
+      });
+    }
+    if (typeof Sync !== 'undefined') Sync.schedule();
+    renderSync();
+  },
+};
+
+/* ---------- estat derivat ---------- */
+const S = () => Store.state;
+const sortedEntries = () => [...S().entries].sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+const lastEntry = () => { const e = sortedEntries(); return e[e.length - 1] || null; };
+const currentWeight = () => lastEntry()?.pes ?? S().profile?.pes;
+const currentWaist = () => { const e = sortedEntries().filter(x => x.cintura); return e.length ? e[e.length - 1].cintura : S().profile?.cintura; };
+const metrics = () => S().profile ? calc(S().profile, { pes: currentWeight(), cintura: currentWaist() }) : null;
+function projection(p) {
+  if (!p || p.objectiu === 'mantenir' || !p.pes_objectiu || !p.data_objectiu || !p.data_inicial) return null;
+  const t0 = ts(p.data_inicial), t1 = ts(p.data_objectiu); if (t1 <= t0) return null;
+  return { p0: p.pes_inicial, p1: +p.pes_objectiu, t0, t1, at: t => p.pes_inicial + (p.pes_objectiu - p.pes_inicial) * clamp((t - t0) / (t1 - t0), 0, 1) };
+}
+function entryMetrics(e) {
+  const p = S().profile; if (!p) return {};
+  const m = calc(p, { pes: e.pes, cintura: e.cintura || null });
+  return { imc: m.imc?.value, greix: e.cintura || p.cintura ? m.greix?.value : m.greix?.value, rca: e.cintura ? m.rca?.value : null };
+}
+function trendRate(days = 28) { // regressió lineal kg/setmana
+  const es = sortedEntries(); if (es.length < 2) return null;
+  const last = ts(es[es.length - 1].date);
+  const pts = es.filter(e => ts(e.date) >= last - days * DAY);
+  const use = pts.length >= 2 ? pts : es.slice(-2);
+  const xs = use.map(e => (ts(e.date) - last) / (7 * DAY)), ys = use.map(e => e.pes);
+  const mx = xs.reduce((a, b) => a + b) / xs.length, my = ys.reduce((a, b) => a + b) / ys.length;
+  let num = 0, den = 0; xs.forEach((x, i) => { num += (x - mx) * (ys[i] - my); den += (x - mx) ** 2; });
+  return den ? num / den : null;
+}
+
+/* =========================================================
+   UI helpers
+   ========================================================= */
+function toast(msg, action) {
+  const el = document.createElement('div'); el.className = 'toast';
+  el.innerHTML = `<span>${msg}</span>` + (action ? `<button>${action.label}</button>` : '');
+  if (action) el.querySelector('button').onclick = () => { action.fn(); el.remove(); };
+  $('#toasts').appendChild(el); setTimeout(() => el.remove(), action ? 6000 : 3500);
+}
+const badge = (status, label) => { const s = STATUS[status] || STATUS.info; return `<span class="badge ${s.cls}"><i></i>${esc(label || s.label)}</span>`; };
+function rangeBar({ min, max, zones, value, lo, hi, unit = '', d = 1, loLabel = 'Mín', hiLabel = 'Màx' }) {
+  if (value == null || isNaN(value)) return '';
+  const pct = v => clamp((v - min) / (max - min) * 100, 0, 100);
+  const COL = { green: '#22C55E', orange: '#F59E0B', red: '#EF4444' };
+  let st = min;
+  const segs = zones.map(([to, c]) => { const s = `<span class="seg" style="left:${pct(st)}%;width:${pct(to) - pct(st)}%;background:${COL[c]}"></span>`; st = to; return s; }).join('');
+  return `<div class="rb"><div class="track">${segs}</div><div class="mk"><span style="left:${pct(value)}%"></span></div>
+    <div class="lbl"><span>${loLabel} <b class="num">${n(lo, d)}${unit}</b></span><span class="num"><b>Tu: ${n(value, d)}${unit}</b></span><span>${hiLabel} <b class="num">${n(hi, d)}${unit}</b></span></div></div>`;
+}
+function metricCard({ title, value, unit, status, label, hint, em, range, why }, i = 0) {
+  const s = STATUS[status] || STATUS.info;
+  return `<div class="mc" style="animation-delay:${i * 35}ms"><span class="bar" style="background:${s.col}"></span>
+    <div class="t"><span>${esc(title)}</span><span>${em || ''}</span></div>
+    <div class="v num">${value ?? '—'}${unit ? `<small>${unit}</small>` : ''}</div>
+    <div class="row">${status && status !== 'info' ? badge(status, label) : (label ? esc(label) : '')}</div>
+    ${range ? rangeBar(range) : ''}
+    ${hint ? `<div class="hint">${hint}</div>` : ''}
+    ${why ? `<details><summary class="why">Com es calcula? ▾</summary><p>${why}</p></details>` : ''}
+  </div>`;
+}
+
+/* =========================================================
+   ROUTER + RENDER
+   ========================================================= */
+const ROUTES = { inici: 'Tauler', alimentacio: 'Alimentació', seguiment: 'Seguiment', perfil: 'Perfil' };
+let route = (location.hash || '#inici').slice(1); if (!ROUTES[route]) route = 'inici';
+window.addEventListener('hashchange', () => { const r = location.hash.slice(1); route = ROUTES[r] ? r : 'inici'; render(); window.scrollTo(0, 0); });
+const ui = { tab: 'composicio', range: 'tot', confirmDel: false };
+const charts = {};
+function killCharts() { Object.values(charts).forEach(c => c.destroy()); for (const k in charts) delete charts[k]; }
+
+function render() {
+  killCharts();
+  const app = $('#app');
+  if (!S().profile) { app.innerHTML = welcomeHTML(); return; }
+  const nav = Object.entries({ inici: ['🏠', 'Tauler'], alimentacio: ['🥗', 'Alimentació'], seguiment: ['📈', 'Seguiment'], perfil: ['👤', 'Perfil'] });
+  app.innerHTML = `<div class="shell">
+    <aside class="side">
+      <div class="brand"><div class="logo">🌿</div><div><b>HEALTH TRAINER</b><small>Nutrició · Salut</small></div></div>
+      <nav class="nav">${nav.map(([k, [ic, l]]) => `<a href="#${k}" class="${route === k ? 'on' : ''}"><span class="ic">${ic}</span>${l}</a>`).join('')}</nav>
+      <div class="side-foot"><div class="who">${esc(S().profile.nom || 'Usuari')}</div><div class="muted small">Objectiu: ${GOALS[S().profile.objectiu]?.label || '—'}</div><div id="sync" class="sync"></div></div>
+    </aside>
+    <main>
+      <div class="top"><div class="mbrand brand"><div class="logo">🌿</div><div><b>HEALTH TRAINER</b></div></div>
+        <span class="eyebrow">Treball de Recerca · Batxillerat</span>
+        <button class="btn sm" data-act="checkin">＋ Registrar pes</button></div>
+      <div class="wrap" id="view">${route === 'inici' ? dashHTML() : route === 'alimentacio' ? foodHTML() : route === 'seguiment' ? trackHTML() : profileHTML()}</div>
+    </main>
+    <nav class="bottom-nav">${nav.map(([k, [ic, l]]) => `<a href="#${k}" class="${route === k ? 'on' : ''}"><span class="ic">${ic}</span>${l}</a>`).join('')}</nav>
+  </div>`;
+  renderSync();
+  if (route === 'seguiment') drawTrackCharts();
+  if (route === 'alimentacio' && ui.ftab === 'diari' && typeof drawFoodChart === 'function') drawFoodChart();
+}
+function renderSync() {
+  const el = $('#sync'); if (!el) return;
+  const [cls, lab] = typeof syncLabel === 'function' ? syncLabel() : [Store.mode === 'cloud' ? 'cloud' : '', Store.mode === 'cloud' ? 'Desat al teu compte' : 'Desat en aquest navegador'];
+  el.className = 'sync' + (cls ? ' ' + cls : '');
+  el.innerHTML = `<i></i>${lab}`;
+  const ps = $('#psync'); if (ps) { ps.className = 'sync ' + cls; ps.innerHTML = `<i></i>${lab}`; }
+}
+
+/* ---------- WELCOME ---------- */
+function welcomeHTML() {
+  return `<div class="welcome"><div class="card">
+    <div class="brand" style="justify-content:center"><div class="logo">🌿</div><div style="text-align:left"><b>HEALTH TRAINER</b><small>Nutrició · Salut</small></div></div>
+    <h1>El teu pla, en 2 minuts.</h1>
+    <p>Et farem unes preguntes, una a una. A mesura que respons, veuràs com es calculen el teu IMC, el % de greix i les calories que necessites.</p>
+    <div class="feats"><div><b>Pas a pas</b>Una pregunta per pantalla, sense formularis eterns.</div><div><b>Esport real</b>Tria els teus esports i quant hi dediques.</div><div><b>Seguiment</b>Registra el pes en 10 segons i mira la tendència.</div></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn" data-act="start" style="height:54px;padding:0 30px;font-size:16px">Començar →</button>
+      <button class="btn ghost" data-act="demo" style="height:54px">Veure amb dades d'exemple</button>
+    </div>
+    ${CFG.estudi ? `<p style="margin-top:16px"><button class="link" data-act="study-login" style="font-size:15px">Ja hi participo: recuperar les meves dades</button></p>` : ''}
+    <p class="small faint" style="margin-top:22px">Valors orientatius calculats amb fórmules de referència. No substitueixen el consell d'un professional sanitari.</p>
+  </div></div>`;
+}
+
+/* ---------- DASHBOARD ---------- */
+function dashHTML() {
+  const p = S().profile, m = metrics(), pr = projection(p);
+  const cw = currentWeight(), le = lastEntry();
+  let hero = '';
+  if (pr) {
+    const total = pr.p1 - pr.p0, done = cw - pr.p0;
+    const pct = total ? clamp(done / total * 100, 0, 100) : 0;
+    const previst = pr.at(Date.now());
+    const diff = cw - previst; const loss = total < 0;
+    const ahead = Math.abs(diff) < 0.15 || (loss ? diff <= 0 : diff >= 0);
+    hero = `<div class="hero"><div class="hero-grid">
+      <div><div class="k">Progrés cap a ${n(pr.p1)} kg</div>
+        <div class="big num" style="margin-top:10px">${n(cw)}<small>kg ara</small></div>
+        <div class="prog"><div style="width:${pct}%"></div></div>
+        <div class="small" style="margin-top:8px;color:#A7F3D0">${n(Math.abs(done))} kg ${loss ? 'perduts' : 'guanyats'} de ${n(Math.abs(total))} · ${Math.round(pct)}% fet</div></div>
+      <div class="chips">
+        <div class="chip"><b class="num">${n(previst)} kg</b><span>Previst avui</span></div>
+        <div class="chip"><b>${ahead ? '✅ En camí' : '⏳ Per darrere'}</b><span>${n(Math.abs(diff))} kg ${ahead ? (loss ? 'per sota' : 'per sobre') : (loss ? 'per sobre' : 'per sota')}</span></div>
+        <div class="chip"><b class="num">${fmtShort(p.data_objectiu)}</b><span>Data objectiu</span></div>
+      </div></div></div>`;
+  } else {
+    hero = `<div class="hero"><div class="hero-grid"><div><div class="k">${GOALS[p.objectiu].label}</div>
+      <div class="big num" style="margin-top:10px">${n(m.kcal, 0)}<small>kcal/dia</small></div>
+      <div class="small" style="margin-top:10px;color:#A7F3D0">Pes actual ${n(cw)} kg${le ? ' · últim registre ' + fmtShort(le.date) : ''}</div></div>
+      <div class="chips"><div class="chip"><b class="num">${n(m.prot?.value, 0)} g</b><span>Proteïna/dia</span></div><div class="chip"><b class="num">${nf(m.aigua, 1)} L</b><span>Aigua/dia</span></div></div></div></div>`;
+  }
+  const daysSince = le ? Math.round((ts(todayStr()) - ts(le.date)) / DAY) : null;
+  const nudge = daysSince == null || daysSince >= 7
+    ? `<div class="callout mint" style="margin-top:16px;align-items:center"><span style="font-size:20px">⏱️</span><div style="flex:1">${daysSince == null ? 'Encara no tens cap registre de pes.' : `Fa ${daysSince} dies del teu últim registre.`} Un registre setmanal fa que la tendència sigui fiable.</div><button class="btn sm" data-act="checkin">Registrar ara</button></div>` : '';
+  return `<div class="ph"><div><div class="eb">Tauler principal</div><h1>Hola, ${esc(p.nom || '')} 👋</h1>
+      <p>${GOALS[p.objectiu].label}${p.pes_objectiu && p.objectiu !== 'mantenir' ? ` · ${n(p.pes_objectiu)} kg` : ''}${p.data_objectiu && p.objectiu !== 'mantenir' ? ` abans del ${fmtDate(p.data_objectiu)}` : ''}</p></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${badge('green')}${badge('orange')}${badge('red')}</div></div>
+    ${hero}${nudge}${todayFoodStrip(m)}
+    <div class="grid g2" style="margin-top:22px">${energyPanel(m, p)}${sportsPanel(m)}</div>
+    <h2 style="margin:30px 0 14px;font-size:22px">Els teus indicadors</h2>
+    ${metricsTabs(m, p)}
+    <p class="small faint" style="margin-top:24px">Valors orientatius (Deurenberg, Mifflin-St Jeor, MET de l'Compendium of Physical Activities). No substitueixen el consell d'un professional sanitari.</p>`;
+}
+function todayFoodStrip(m) {
+  if (typeof HAS_FOODS === 'undefined' || !HAS_FOODS) return '';
+  const T = foodTargets(m), t = dayTotals(todayStr());
+  return `<div class="panel" style="margin-top:16px;display:grid;grid-template-columns:1.3fr 1fr auto;gap:20px;align-items:center" id="todayfood">
+    <div><p class="sec-label" style="margin-bottom:6px">Consum d'avui</p><div class="h num" style="font-size:28px;font-weight:700">${Math.round(t.kcal)} <span class="muted" style="font-size:14px;font-family:Inter;font-weight:500">/ ${Math.round(T.kcal)} kcal</span></div>
+      <div style="height:8px;border-radius:999px;background:#F1F5F9;overflow:hidden;margin-top:10px"><div style="height:100%;width:${Math.min(100, t.kcal / T.kcal * 100)}%;background:#10B981;border-radius:999px"></div></div></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">${[['Prot.', t.p, T.p], ['Hidr.', t.h, T.h], ['Greix.', t.g, T.g]].map(([l, v, tg]) => `<div style="background:#F8FAF7;border-radius:12px;padding:8px"><b class="h num" style="font-size:17px">${Math.round(v)}g</b><div class="small faint">${l} / ${Math.round(tg)}</div></div>`).join('')}</div>
+    <a class="btn" href="#alimentacio" data-act="ftab" data-t="diari">Registrar àpats →</a></div>`;
+}
+function energyPanel(m, p) {
+  const parts = [['Basal', m.mb, '#0F4C3A'], ['Dia a dia', m.neat, '#10B981'], ['Esport', m.espDia, '#6EE7B7']];
+  const tot = m.det;
+  const adjTxt = m.adj < 0 ? `− ${n(-m.adj, 0)} kcal de dèficit` : m.adj > 0 ? `+ ${n(m.adj, 0)} kcal de superàvit` : 'sense ajust';
+  return `<div class="panel"><p class="sec-label">D'on surten les teves calories</p>
+    <div class="h num" style="font-size:30px;font-weight:700">${n(m.kcal, 0)} <span class="muted" style="font-size:14px;font-family:Inter;font-weight:500">kcal/dia objectiu</span></div>
+    <div class="muted small" style="margin-top:4px">Despesa total ${n(tot, 0)} kcal ${adjTxt}</div>
+    <div class="stack">${parts.map(([l, v, c]) => v > 0 ? `<div style="flex:${v};background:${c}" title="${l}">${v / tot > .12 ? n(v, 0) : ''}</div>` : '').join('')}</div>
+    <div class="legend">${parts.map(([l, v, c]) => `<span><i style="background:${c}"></i>${l} <b class="num">${n(v, 0)}</b></span>`).join('')}</div>
+    <div style="margin-top:14px">${badge(m.val.status, m.val.label)} ${m.ritme != null ? `<span class="small muted">· ${nf(Math.abs(m.ritme), 2)} kg/setmana (${nf(m.ritmePct, 2)}% del pes)</span>` : ''}</div>
+    ${m.val.warn ? `<div class="callout amber" style="margin-top:12px">⚠️ ${esc(m.val.warn)}</div>` : ''}
+  </div>`;
+}
+function sportsPanel(m) {
+  const sp = (m.esports || []).slice().sort((a, b) => b.kcal - a.kcal);
+  const max = Math.max(1, ...sp.map(s => s.kcal));
+  return `<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center"><p class="sec-label" style="margin:0">Esport setmanal</p><a class="link" href="#perfil" data-act="edit" data-step="fa_esport">Edita</a></div>
+    ${sp.length ? `<div class="h num" style="font-size:30px;font-weight:700;margin-top:12px">${n(m.espSetm, 0)} <span class="muted" style="font-size:14px;font-family:Inter;font-weight:500">kcal/setmana · ${n(m.horesSetm)} h</span></div>
+      <div style="margin-top:8px">${sp.map(s => `<div class="srow"><div class="em">${SPORT[s.sport].em}</div><div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;gap:8px"><b style="font-size:14px">${SPORT[s.sport].label}</b><span class="num small muted">${n(s.kcal, 0)} kcal</span></div>
+        <div class="small faint">${s.dies}×${s.minuts} min · ${INTENS[s.intensitat].label.toLowerCase()}</div>
+        <div class="bar2"><div style="width:${s.kcal / max * 100}%"></div></div></div></div>`).join('')}</div>`
+      : `<div class="empty" style="margin-top:14px;padding:26px"><div style="font-size:28px">🏃</div><p style="margin:6px 0 12px">No has afegit cap esport.</p><button class="btn sm" data-act="edit" data-step="fa_esport">Afegir esports</button></div>`}
+  </div>`;
+}
+function metricsTabs(m, p) {
+  const pes = m.pes, g = m.greix, kg = x => pes * x / 100;
+  const groups = [
+    { id: 'composicio', label: 'Composició corporal', cards: [
+      { title: 'IMC', em: '⚖️', value: nf(m.imc.value, 1), unit: 'kg/m²', status: m.imc.status, label: m.imc.label,
+        range: { min: 15, max: 40, zones: [[18.5, 'orange'], [25, 'green'], [30, 'orange'], [40, 'red']], value: m.imc.value, lo: 18.5, hi: 24.9 },
+        why: 'Pes (kg) dividit per l\'alçada (m) al quadrat. No distingeix múscul de greix: mira-ho juntament amb el % de greix i la cintura.' },
+      { title: 'IMC adaptat', em: '🎯', value: `${n(m.imcAdapt.min)}–${n(m.imcAdapt.max)}`, status: m.imcAdapt.status, label: m.imcAdapt.label,
+        range: { min: 15, max: 40, zones: [[m.imcAdapt.min, 'orange'], [m.imcAdapt.max, 'green'], [Math.min(m.imcAdapt.max + 5, 40), 'orange'], [40, 'red']], value: m.imc.value, lo: m.imcAdapt.min, hi: m.imcAdapt.max },
+        hint: `Pes saludable per a tu: <b>${n(m.pesMin)}–${n(m.pesMax)} kg</b>`, why: 'Rang d\'IMC desplaçat segons la complexió (prova del canell) i l\'edat.' },
+      ...(m.rca ? [{ title: 'Cintura / alçada', em: '📏', value: nf(m.rca.value, 2), status: m.rca.status, label: m.rca.label,
+        range: { min: 0.3, max: 0.75, zones: [[0.4, 'orange'], [0.5, 'green'], [0.6, 'orange'], [0.75, 'red']], value: m.rca.value, lo: 0.4, hi: 0.49, d: 2 },
+        why: 'Cintura dividida per l\'alçada. Per sota de 0,5 és la regla més senzilla de risc cardiometabòlic baix ("cintura < meitat de l\'alçada").' }] : []),
+      { title: '% greix', em: '💧', value: nf(g.value, 1), unit: '%', status: g.status, label: g.label,
+        range: { min: 0, max: g.risc + 15, zones: [[g.min, 'orange'], [g.max, 'green'], [g.risc, 'orange'], [g.risc + 15, 'red']], value: g.value, lo: g.min, hi: g.max, unit: '%' },
+        hint: `Deurenberg ${nf(g.deur, 1)}%${g.corr ? ` + correcció cintura ${g.corr}%` : ''}`, why: 'Fórmula de Deurenberg (IMC, edat i sexe) amb una correcció si la relació cintura-alçada és alta.' },
+      { title: 'Massa grassa', em: '🫧', value: nf(m.grassa, 1), unit: 'kg', status: g.status, label: g.label,
+        range: { min: 0, max: kg(g.risc + 15), zones: [[kg(g.min), 'orange'], [kg(g.max), 'green'], [kg(g.risc), 'orange'], [kg(g.risc + 15), 'red']], value: m.grassa, lo: kg(g.min), hi: kg(g.max), unit: ' kg' } },
+      { title: 'Massa magra', em: '🦴', value: nf(m.magra, 1), unit: 'kg', status: 'info', label: 'Pes − massa grassa' },
+    ] },
+    { id: 'energia', label: 'Energia', cards: [
+      { title: 'Metabolisme basal', em: '⚡', value: n(m.mb, 0), unit: 'kcal', status: 'info', label: 'Mifflin-St Jeor', why: 'Energia que gastes en repòs absolut. És el mínim que no hauries de baixar de manera sostinguda.' },
+      { title: 'Activitat diària', em: ACT[p.activitat].em, value: n(m.neat, 0), unit: 'kcal', status: 'info', label: `${ACT[p.activitat].label} · ×${ACT[p.activitat].factor}`, why: 'Despesa del dia a dia sense comptar l\'esport (caminar, estar dret, feina).' },
+      { title: 'Esport', em: '🏃', value: n(m.espDia, 0), unit: 'kcal/dia', status: 'info', label: `${n(m.espSetm, 0)} kcal/setmana`, why: 'Per cada esport: (MET × intensitat − 1) × pes × hores. Restem 1 MET perquè el repòs ja és dins del basal.' },
+      { title: 'Calories objectiu', em: '🎯', value: n(m.kcal, 0), unit: 'kcal', status: m.val.status, label: m.val.label,
+        range: { min: m.mb * 0.8, max: m.det + 800, zones: [[m.mb, 'red'], [m.det + 500, 'green'], [m.det + 800, 'orange']], value: m.kcal, lo: m.mb, hi: m.det, loLabel: 'Basal', hiLabel: 'Manteniment', unit: '', d: 0 } },
+    ] },
+    { id: 'nutricio', label: 'Objectiu i nutrició', cards: [
+      { title: 'Ritme de l\'objectiu', em: '📆', value: m.ritme != null ? nf(Math.abs(m.ritme), 2) : '—', unit: m.ritme != null ? 'kg/setm.' : '', status: m.val.status, label: m.val.label,
+        range: m.ritmePct != null ? { min: 0, max: p.objectiu === 'perdre' ? 1.5 : .75, zones: p.objectiu === 'perdre' ? [[0.75, 'green'], [1, 'orange'], [1.5, 'red']] : [[0.25, 'green'], [0.5, 'orange'], [0.75, 'red']], value: Math.min(m.ritmePct, p.objectiu === 'perdre' ? 1.5 : .75), lo: p.objectiu === 'perdre' ? .75 : .25, hi: p.objectiu === 'perdre' ? 1 : .5, loLabel: 'Realista ≤', hiLabel: 'Excessiu >', unit: '%', d: 2 } : null,
+        hint: m.dies > 0 ? `${m.dies} dies (${n(m.dies / 7)} setmanes)${m.dataRealista ? ` · data recomanada: ${fmtDate(m.dataRealista)}` : ''}` : null,
+        why: 'Mesurat en % del pes corporal per setmana: és més just que un número fix de kg (1 kg/setmana no és el mateix pesant 60 kg que 120 kg).' },
+      { title: 'Proteïnes', em: '🥩', value: n(m.prot.value, 0), unit: 'g/dia', status: 'info', label: `${nf(m.prot.gkg, 1)} g/kg${m.prot.ref !== pes ? ' de pes de referència' : ''}`,
+        range: { min: m.prot.ref * 0.8, max: m.prot.ref * 2.6, zones: [[m.prot.ref * 1.2, 'orange'], [m.prot.ref * 2.2, 'green'], [m.prot.ref * 2.6, 'orange']], value: m.prot.value, lo: m.prot.ref * 1.2, hi: m.prot.ref * 2.2, unit: ' g', d: 0 } },
+      { title: 'Hidratació', em: '🚰', value: nf(m.aigua, 1), unit: 'L/dia', status: 'info', label: '35 ml/kg + esport' },
+    ] },
+  ];
+  return `<div class="tabs">${groups.map(g => `<button data-act="tab" data-tab="${g.id}" class="${ui.tab === g.id ? 'on' : ''}">${g.label}</button>`).join('')}</div>
+    <div class="grid g4">${(groups.find(g => g.id === ui.tab) || groups[0]).cards.map(metricCard).join('')}</div>`;
+}
+
+/* ---------- SEGUIMENT ---------- */
+function trackHTML() {
+  const p = S().profile, es = sortedEntries(), m = metrics(), pr = projection(p);
+  if (!es.length) return `<div class="ph"><div><div class="eb">Seguiment</div><h1>Evolució corporal</h1></div></div>
+    <div class="empty"><div style="font-size:34px">📉</div><h3 style="margin:8px 0">Encara no hi ha registres</h3><p>Registra el pes un cop per setmana, el mateix dia i a la mateixa hora.</p><button class="btn" data-act="checkin">Primer registre</button></div>`;
+  const first = es[0], last = es[es.length - 1];
+  const change = last.pes - first.pes;
+  const rate = trendRate();
+  let eta = '—', etaS = 'Calen 2 registres';
+  if (rate != null && pr) {
+    const rem = pr.p1 - last.pes;
+    if (Math.abs(rem) < 0.2) { eta = 'Assolit! 🎉'; etaS = 'Objectiu complert'; }
+    else if (rate !== 0 && Math.sign(rate) === Math.sign(rem)) { const wk = rem / rate; const d = addDays(last.date, Math.round(wk * 7)); eta = fmtShort(d); etaS = ts(d) <= pr.t1 ? 'Abans de la data objectiu ✅' : 'Després de la data objectiu'; }
+    else { eta = '—'; etaS = 'La tendència va en sentit contrari'; }
+  } else if (rate != null) { etaS = 'Sense pes/data objectiu'; }
+  const prev = pr ? pr.at(ts(last.date)) : null;
+  const ins = [
+    ['Pes actual', `${n(last.pes)} kg`, `Registre del ${fmtShort(last.date)}`],
+    ['Canvi total', `${change > 0 ? '+' : change < 0 ? '−' : ''}${n(Math.abs(change))} kg`, `Des del ${fmtShort(first.date)}`],
+    ['Ritme (4 setm.)', rate != null ? `${rate > 0 ? '+' : rate < 0 ? '−' : ''}${nf(Math.abs(rate), 2)} kg` : '—', 'per setmana (tendència)'],
+    pr ? ['Previsió d\'arribada', eta, etaS] : ['vs. previst', '—', 'Defineix pes i data objectiu'],
+  ];
+  const rows = [...es].reverse().map((e, i, arr) => {
+    const prv = arr[i + 1]; const d = prv ? e.pes - prv.pes : null; const em = entryMetrics(e);
+    const exp = pr ? pr.at(ts(e.date)) : null;
+    const feel = e.sens ? ['energia', 'gana', 'son'].map(k => e.sens[k] ? ['😫', '😕', '😐', '🙂', '😄'][e.sens[k] - 1] : '·').join(' ') : '';
+    return `<tr><td>${fmtDate(e.date)}</td><td class="num"><b>${n(e.pes)} kg</b></td>
+      <td class="num ${d == null ? '' : d < 0 ? 'delta-down' : d > 0 ? 'delta-up' : ''}">${d == null ? '—' : (d > 0 ? '+' : d < 0 ? '−' : '±') + nf(Math.abs(d), 1)}</td>
+      <td class="num faint">${exp != null ? n(exp) : '—'}</td><td class="num">${e.cintura ? n(e.cintura) : '—'}</td>
+      <td class="num">${n(em.imc)}</td><td class="num">${n(em.greix)}</td><td class="num">${em.rca ? nf(em.rca, 2) : '—'}</td>
+      <td title="Energia · Gana · Son">${feel}</td><td class="muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis">${esc(e.obs || '')}</td>
+      <td><button class="icon-btn" data-act="del-entry" data-id="${e.id}" title="Esborrar">🗑</button></td></tr>`;
+  }).join('');
+  return `<div class="ph"><div><div class="eb">Seguiment</div><h1>Evolució corporal</h1><p>La línia de punts és el camí ideal fins al teu objectiu. La verda, la teva tendència real.</p></div>
+      <button class="btn" data-act="checkin">＋ Nou registre</button></div>
+    ${!p.cintura && !es.some(e => e.cintura) ? `<div class="callout amber" style="margin-bottom:16px">📏 Afegeix la cintura en algun registre per calcular la relació cintura-alçada i afinar el % de greix.</div>` : ''}
+    <div class="grid g4">${ins.map(([l, v, s]) => `<div class="ins"><div class="l">${l}</div><div class="v num">${v}</div><div class="s">${s}</div></div>`).join('')}</div>
+    <div class="panel" style="margin-top:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div><h3 style="font-size:18px">Evolució del pes</h3>${pr ? `<div class="small muted" style="margin-top:4px">Funció objectiu: pes(t) = ${n(pr.p0)} ${pr.p1 < pr.p0 ? '−' : '+'} ${nf(Math.abs((pr.p1 - pr.p0) / ((pr.t1 - pr.t0) / DAY / 7)), 2)}·t <span class="faint">(t en setmanes des del ${fmtShort(p.data_inicial)})</span></div>` : ''}</div>
+        <div class="seg-ctl">${[['4s', '4 setm.'], ['3m', '3 mesos'], ['tot', 'Tot']].map(([k, l]) => `<button data-act="range" data-r="${k}" class="${ui.range === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      </div>
+      <div class="chart-box"><canvas id="cw"></canvas></div>
+      ${prev != null ? `<div class="small muted" style="margin-top:10px">Al darrer registre havies d'estar a <b class="num">${n(prev)} kg</b> i estaves a <b class="num">${n(last.pes)} kg</b> → ${(pr.p1 < pr.p0 ? last.pes <= prev : last.pes >= prev) ? '<span class="delta-down">vas per davant ✅</span>' : `<span class="delta-up">${n(Math.abs(last.pes - prev))} kg per darrere</span>`}</div>` : ''}
+    </div>
+    <div class="grid g3" style="margin-top:16px">
+      <div class="panel"><h3 style="font-size:15px;margin-bottom:10px">IMC</h3><div class="chart-box sm"><canvas id="ci"></canvas></div></div>
+      <div class="panel"><h3 style="font-size:15px;margin-bottom:10px">% greix</h3><div class="chart-box sm"><canvas id="cg"></canvas></div></div>
+      <div class="panel"><h3 style="font-size:15px;margin-bottom:10px">Cintura (cm)</h3><div class="chart-box sm"><canvas id="cc"></canvas></div></div>
+    </div>
+    <div class="panel" style="margin-top:16px"><h3 style="font-size:18px;margin-bottom:8px">Historial</h3><div class="tscroll"><table>
+      <thead><tr><th>Data</th><th>Pes</th><th>Canvi</th><th>Previst</th><th>Cintura</th><th>IMC</th><th>% greix</th><th>RCA</th><th>Sensacions</th><th>Notes</th><th></th></tr></thead>
+      <tbody>${rows}</tbody></table></div></div>`;
+}
+function drawTrackCharts() {
+  if (!window.Chart) return;
+  const p = S().profile, pr = projection(p);
+  let es = sortedEntries(); if (!es.length) return;
+  const lastT = ts(es[es.length - 1].date);
+  const cut = ui.range === '4s' ? lastT - 28 * DAY : ui.range === '3m' ? lastT - 91 * DAY : -Infinity;
+  const vis = es.filter(e => ts(e.date) >= cut);
+  const xMin = vis.length ? ts(vis[0].date) - DAY : undefined;
+  const xMax = ui.range === 'tot' && pr ? pr.t1 + 3 * DAY : lastT + 3 * DAY;
+  // tendència: mitjana mòbil centrada de 3 registres (no s'endarrereix)
+  const trend = vis.map((e, i) => { const w = vis.slice(Math.max(0, i - 1), i + 2); return { x: ts(e.date), y: +(w.reduce((a, b) => a + b.pes, 0) / w.length).toFixed(2) }; });
+  const ds = [
+    { label: 'Pes real', data: vis.map(e => ({ x: ts(e.date), y: e.pes })), borderColor: 'rgba(15,76,58,.35)', backgroundColor: '#0F4C3A', pointRadius: 4, pointHoverRadius: 6, showLine: false },
+    { label: 'Tendència', data: trend, borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,.12)', fill: true, tension: .35, pointRadius: 0, borderWidth: 3 },
+  ];
+  if (pr) ds.push({ label: 'Camí objectiu', data: [{ x: pr.t0, y: pr.p0 }, { x: pr.t1, y: pr.p1 }], borderColor: '#F59E0B', borderDash: [6, 5], pointRadius: [0, 5], pointBackgroundColor: '#F59E0B', fill: false, tension: 0, borderWidth: 2 });
+  const xs = { type: 'linear', min: xMin, max: xMax, grid: { display: false }, ticks: { maxTicksLimit: 7, callback: v => new Date(v).toLocaleDateString('ca-ES', { day: 'numeric', month: 'short' }), color: '#94A3B8', font: { size: 11 } } };
+  const ys = { grid: { color: '#EEF2EE' }, ticks: { color: '#94A3B8', font: { size: 11 } } };
+  const tip = { callbacks: { title: it => new Date(it[0].parsed.x).toLocaleDateString('ca-ES'), label: c => `${c.dataset.label}: ${n(c.parsed.y)}` } };
+  Chart.defaults.font.family = 'Inter';
+  charts.w = new Chart($('#cw'), { type: 'line', data: { datasets: ds }, options: { maintainAspectRatio: false, animation: { duration: 600 }, interaction: { mode: 'nearest', intersect: false },
+    scales: { x: xs, y: ys }, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { size: 12 } } }, tooltip: tip } } });
+  const small = (id, key, color, d = 1) => {
+    const pts = vis.map(e => ({ x: ts(e.date), y: key === 'cintura' ? e.cintura || null : entryMetrics(e)[key] })).filter(p => p.y != null);
+    const el = $('#' + id); if (!el) return;
+    if (!pts.length) { el.parentElement.innerHTML = '<div class="faint small" style="display:grid;place-items:center;height:100%">Sense dades</div>'; return; }
+    charts[id] = new Chart(el, { type: 'line', data: { datasets: [{ data: pts.map(p => ({ x: p.x, y: +p.y.toFixed(d) })), borderColor: color, backgroundColor: color + '22', fill: true, tension: .35, pointRadius: 2.5 }] },
+      options: { maintainAspectRatio: false, scales: { x: { ...xs, max: lastT + 3 * DAY, ticks: { ...xs.ticks, maxTicksLimit: 4 } }, y: ys }, plugins: { legend: { display: false }, tooltip: tip } } });
+  };
+  small('ci', 'imc', '#3B82F6'); small('cg', 'greix', '#EF4444'); small('cc', 'cintura', '#8B5CF6');
+}
+
+/* ---------- PERFIL ---------- */
+function profileHTML() {
+  const p = S().profile, m = metrics();
+  const sec = (title, step, rows) => `<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><p class="sec-label" style="margin:0">${title}</p><button class="link" data-act="edit" data-step="${step}">Edita</button></div>
+    ${rows.map(([k, v]) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px"><span class="muted">${k}</span><b style="font-weight:600;text-align:right">${v}</b></div>`).join('')}</div>`;
+  const sp = p.fa_esport && p.esports?.length ? p.esports.map(e => [`${SPORT[e.sport].em} ${SPORT[e.sport].label}`, `${e.dies}×${e.minuts} min · ${INTENS[e.intensitat].label}`]) : [['Esports', 'Cap']];
+  const hist = S().history.slice().reverse();
+  return `<div class="ph"><div><div class="eb">Perfil personal</div><h1>${esc(p.nom || 'El meu perfil')}</h1><p>Toca "Edita" per canviar una resposta: tot es recalcula a l'instant.${p.data_inicial ? ` Inici del pla: ${fmtDate(p.data_inicial)} (${n(p.pes_inicial)} kg).` : ''}</p></div>
+      <button class="btn ghost" data-act="edit" data-step="nom">Refer el qüestionari</button></div>
+    <div class="grid g2">
+      ${sec('Sobre tu', 'sexe', [['Sexe', SEX[p.sexe]], ['Edat', `${p.edat} anys`], ['Alçada', `${n(p.alcada)} cm`]])}
+      ${sec('Cos', 'pes', [['Pes al perfil', `${n(p.pes)} kg`], ['Pes actual (últim registre)', `${n(currentWeight())} kg`], ['Cintura', p.cintura ? `${n(p.cintura)} cm` : 'No indicada'], ['Complexió', COMPLEX[p.complexio].label]])}
+      ${sec('Activitat i esport', 'activitat', [['Dia a dia', `${ACT[p.activitat].em} ${ACT[p.activitat].label}`], ...sp])}
+      ${sec('Objectiu', 'objectiu', [['Objectiu', `${GOALS[p.objectiu].em} ${GOALS[p.objectiu].label}`], ...(p.objectiu !== 'mantenir' ? [['Pes objectiu', p.pes_objectiu ? `${n(p.pes_objectiu)} kg` : '—'], ['Data objectiu', fmtDate(p.data_objectiu)]] : []), ['Calories objectiu', `${n(m.kcal, 0)} kcal/dia`]])}
+    </div>
+    <div class="panel" style="margin-top:16px"><h3 style="font-size:18px;margin-bottom:8px">Historial de canvis</h3>
+      ${hist.length ? `<div class="tscroll"><table><thead><tr><th>Data</th><th>Canvi</th><th>Pes</th><th>Objectiu</th><th>IMC</th><th>% greix</th><th>Kcal obj.</th></tr></thead><tbody>
+        ${hist.map(h => `<tr><td>${fmtDate(h.date)}</td><td><span class="badge ${h.event === 'Nou objectiu' ? 'b-green' : 'b-info'}">${esc(h.event)}</span></td><td class="num">${n(h.pes)} kg</td><td>${GOALS[h.objectiu]?.label || ''}${h.pes_objectiu ? ` (${n(h.pes_objectiu)} kg)` : ''}</td><td class="num">${n(h.imc)}</td><td class="num">${n(h.greix)}%</td><td class="num">${n(h.kcal, 0)}</td></tr>`).join('')}
+      </tbody></table></div>` : '<p class="faint small">Sense canvis registrats.</p>'}</div>
+    ${studyPanelHTML()}
+    <div class="panel" style="margin-top:16px"><h3 style="font-size:18px;margin-bottom:6px">Les teves dades</h3>
+      <p class="small muted" style="margin:0 0 14px">${S().participant && CFG.endpoint ? 'Es desen en aquest dispositiu i s\'envien al centre per a l\'estudi.' : Store.mode === 'cloud' ? 'Es desen al teu compte i només les veus tu.' : 'Es desen en aquest navegador.'}</p>
+      <div class="confirm">${ui.confirmDel
+        ? `<span class="small" style="color:#B91C1C;font-weight:600">S'esborraran el perfil i tots els registres d'aquest dispositiu${S().participant ? ' (les dades enviades al centre es mantenen; per esborrar-les, retira\'t de l\'estudi)' : ''}. Segur?</span><button class="btn sm danger" data-act="wipe">Sí, esborra-ho tot</button><button class="btn sm ghost" data-act="cancel-wipe">Cancel·la</button>`
+        : `<button class="btn sm ghost" data-act="copy">Copiar dades (JSON)</button><button class="btn sm danger" data-act="ask-wipe">Esborrar totes les dades</button>`}</div></div>`;
+}
+
+/* =========================================================
+   WIZARD — una pregunta per pantalla
+   ========================================================= */
+const WZ = { open: false, draft: null, id: null, dir: 1, editMode: false, filter: '' };
+const DEFAULTS = { email: '', pin: '', consent: false, nom: '', sexe: '', edat: '', alcada: 170, pes: 70, cintura: '', complexio: '', activitat: '', fa_esport: null, esports: [], objectiu: '', pes_objectiu: '', data_objectiu: '' };
+
+function wzSteps(d) {
+  const s = [...(CFG.estudi && !S().participant ? [['compte', 'Estudi']] : []), ['nom', 'Tu'], ['sexe', 'Tu'], ['edat', 'Tu'], ['alcada', 'Cos'], ['pes', 'Cos'], ['cintura', 'Cos'], ['complexio', 'Cos'], ['activitat', 'Activitat'], ['fa_esport', 'Esport']];
+  if (d.fa_esport) { s.push(['esports', 'Esport']); (d.esports || []).forEach(e => s.push(['sport:' + e.sport, 'Esport'])); }
+  s.push(['objectiu', 'Objectiu']);
+  if (d.objectiu && d.objectiu !== 'mantenir') { s.push(['pes_objectiu', 'Objectiu']); s.push(['data_objectiu', 'Objectiu']); }
+  s.push(['resum', 'Resum']);
+  return s.map(([id, sec]) => ({ id, sec }));
+}
+function opt(field, key, o, i, cur) {
+  return `<button class="opt ${cur === key ? 'on' : ''}" data-act="pick" data-f="${field}" data-v="${key}">
+    ${o.em ? `<span class="em">${o.em}</span>` : ''}<span style="flex:1"><b>${esc(o.label)}</b>${o.desc ? `<p>${esc(o.desc)}</p>` : ''}${o.tag ? `<span class="tag">${esc(o.tag)}</span>` : ''}</span><span class="key">${i + 1}</span></button>`;
+}
+function bignum(field, unit, step, min, max, slider) {
+  const v = WZ.draft[field];
+  return `<div class="bignum"><button class="pm" data-act="inc" data-f="${field}" data-s="${-step}" data-min="${min}" data-max="${max}">−</button>
+    <div class="field"><input id="wzin" type="number" inputmode="decimal" step="${step}" min="${min}" max="${max}" data-f="${field}" value="${v === '' || v == null ? '' : v}" placeholder="—"><span class="u">${unit}</span></div>
+    <button class="pm" data-act="inc" data-f="${field}" data-s="${step}" data-min="${min}" data-max="${max}">+</button></div>
+    ${slider ? `<input type="range" id="wzrange" data-f="${field}" min="${min}" max="${max}" step="${step}" value="${v || (min + max) / 2}">` : ''}`;
+}
+const inRange = (v, a, b) => v !== '' && v != null && !isNaN(+v) && +v >= a && +v <= b;
+
+const STEP = {
+  compte: {
+    q: () => 'Participa a l\'estudi 👋', sub: () => `Necessitem el teu correu i un PIN de 4 xifres per guardar les teves dades al centre i poder-les recuperar des d'un altre dispositiu.`,
+    html: d => `<label class="small muted">Correu electrònic</label><input id="wzin" class="txt" type="email" data-f="email" value="${esc(d.email || '')}" autocomplete="email" placeholder="nom@exemple.cat" style="margin:6px 0 16px">
+      <label class="small muted">Tria un PIN de 4 xifres (apunta'l: el necessitaràs per recuperar les dades)</label><input id="wzpin" class="txt" type="password" inputmode="numeric" maxlength="4" value="${esc(d.pin || '')}" placeholder="••••" style="margin:6px 0 16px;letter-spacing:.4em;max-width:200px">
+      <label class="consent"><input type="checkbox" id="wzcons" ${d.consent ? 'checked' : ''}><span>${esc(consentText())}</span></label>
+      <p class="small" style="margin-top:14px"><button class="link" data-act="study-login">Ja hi participo: recuperar les meves dades</button></p>`,
+    ok: d => isEmail(d.email) && /^\d{4}$/.test(String(d.pin || '')) && !!d.consent,
+  },
+  nom: { q: d => 'Com et dius?', sub: () => 'Només el nom, per saludar-te.', html: d => `<input id="wzin" class="txt" data-f="nom" maxlength="40" placeholder="El teu nom" value="${esc(d.nom)}" autocomplete="given-name">`, ok: d => d.nom.trim().length > 0 },
+  sexe: { q: d => `Encantat, ${esc(d.nom.trim() || '')}! Quin és el teu sexe?`, sub: () => 'El necessitem per a les fórmules de metabolisme i % de greix.', html: d => `<div class="opts c2 keep">${Object.entries({ home: { label: 'Home', em: '♂️' }, dona: { label: 'Dona', em: '♀️' } }).map(([k, o], i) => opt('sexe', k, o, i, d.sexe)).join('')}</div>`, ok: d => !!d.sexe, auto: true },
+  edat: { q: () => 'Quants anys tens?', sub: () => '', html: () => bignum('edat', 'anys', 1, 14, 90),
+    fb: d => (d.edat && +d.edat < 18 && +d.edat >= 14 ? `<div class="feedback fb-orange">Les fórmules d'aquesta eina són per a adults. Si tens menys de 18 anys, fes servir els resultats només com a orientació i parla-ho amb un professional abans de fer canvis de dieta.</div>` : ''), ok: d => inRange(d.edat, 14, 90) },
+  alcada: { q: () => 'Quant mesures?', sub: () => 'Descalç, en centímetres.', html: () => bignum('alcada', 'cm', 1, 130, 215, true), ok: d => inRange(d.alcada, 130, 215) },
+  pes: { q: () => 'Quant peses ara?', sub: () => 'Millor al matí, en dejú i després d\'anar al lavabo.', html: () => bignum('pes', 'kg', 0.1, 35, 250, true), ok: d => inRange(d.pes, 35, 250) },
+  cintura: { q: () => 'I la cintura?', sub: () => 'Amb una cinta mètrica a l\'altura del melic, sense estrènyer i després d\'expulsar l\'aire. Si ara no pots, salta-ho i ho afegeixes en un registre.', html: () => bignum('cintura', 'cm', 0.5, 50, 200), ok: d => d.cintura === '' || inRange(d.cintura, 50, 200), skip: 'Ara no ho sé' },
+  complexio: { q: () => 'Fem la prova del canell ✋', sub: () => 'Envolta el canell de la mà dominant amb el polze i l\'índex de l\'altra mà. Què passa amb els dits?', html: d => `<div class="opts c3">${Object.entries(COMPLEX).map(([k, o], i) => opt('complexio', k, o, i, d.complexio)).join('')}</div>`, ok: d => !!d.complexio, auto: true },
+  activitat: { q: () => 'Com és el teu dia a dia?', sub: () => 'Sense comptar l\'esport: això ho preguntem a continuació.', html: d => `<div class="opts c2">${Object.entries(ACT).map(([k, o], i) => opt('activitat', k, o, i, d.activitat)).join('')}</div>`, ok: d => !!d.activitat, auto: true },
+  fa_esport: { q: () => 'Practiques algun esport?', sub: () => 'Inclou gimnàs, caminar a bon ritme o qualsevol activitat planificada.', html: d => `<div class="opts c2 keep">${opt('fa_esport', 'si', { label: 'Sí', em: '🙋' }, 0, d.fa_esport === true ? 'si' : '')}${opt('fa_esport', 'no', { label: 'No, de moment', em: '🛋️' }, 1, d.fa_esport === false ? 'no' : '')}</div>`, ok: d => d.fa_esport != null, auto: true },
+  esports: {
+    q: () => 'Quins esports fas?', sub: () => "Tria'n tants com vulguis. Després et preguntarem per cadascun.",
+    html: d => {
+      const sel = new Set((d.esports || []).map(e => e.sport));
+      return `<div class="sel-bar"><input class="search" id="wzsearch" placeholder="Cerca: córrer, pàdel, gimnàs…" value="${esc(WZ.filter)}"></div><div id="sportlist">${sportList(sel)}</div>`;
+    }, ok: d => (d.esports || []).length > 0,
+  },
+  objectiu: { q: () => 'Quin és el teu objectiu?', sub: () => '', html: d => `<div class="opts c2">${Object.entries(GOALS).map(([k, o], i) => opt('objectiu', k, o, i, d.objectiu)).join('')}</div>`, ok: d => !!d.objectiu, auto: true },
+  pes_objectiu: {
+    q: d => d.objectiu === 'perdre' ? 'Fins a quin pes vols baixar?' : 'Fins a quin pes vols arribar?',
+    sub: () => '',
+    html: d => {
+      const m = calc(d); const p = +d.pes;
+      const picks = d.objectiu === 'perdre'
+        ? [['−5%', p * .95], ['−10%', p * .9], ...(m.pesMax && m.pesMax < p * .95 ? [['Màxim saludable', m.pesMax]] : [])]
+        : [['+3%', p * 1.03], ['+5%', p * 1.05], ...(m.pesMin && m.pesMin > p ? [['Mínim saludable', m.pesMin]] : [])];
+      return bignum('pes_objectiu', 'kg', 0.5, 35, 250) + `<div class="quick">${picks.map(([l, val]) => `<button data-act="setv" data-f="pes_objectiu" data-v="${Math.round(val * 2) / 2}">${l} · ${n(Math.round(val * 2) / 2)} kg</button>`).join('')}</div>`;
+    },
+    fb: d => {
+      const m = calc(d); const p = +d.pes; const v = +d.pes_objectiu;
+      if (!v || !m.pesMin || v < 35) return '';
+      const h = d.alcada / 100, absMin = 18.5 * h * h;
+      const dir = d.objectiu === 'perdre' ? v < p : v > p;
+      if (!dir) return `<div class="feedback fb-orange">⚠️ Aquest pes no va en la direcció del teu objectiu (ara peses ${n(p)} kg).</div>`;
+      if (v < absMin) return `<div class="feedback fb-red">⛔ Amb ${n(v)} kg el teu IMC seria de ${nf(v / (h * h), 1)}, per sota del mínim saludable (18,5). Tria un pes de com a mínim <b>${n(Math.ceil(absMin))} kg</b>.</div>`;
+      if (v < m.pesMin) return `<div class="feedback fb-orange">Està per sota del teu rang saludable (${n(m.pesMin)}–${n(m.pesMax)} kg). Et recomanem un objectiu una mica més alt.</div>`;
+      if (v <= m.pesMax) return `<div class="feedback fb-green">✅ Dins del teu rang saludable (${n(m.pesMin)}–${n(m.pesMax)} kg). Són ${n(Math.abs(v - p))} kg ${d.objectiu === 'perdre' ? 'menys' : 'més'}.</div>`;
+      return `<div class="feedback fb-info">Són ${n(Math.abs(v - p))} kg. El teu rang saludable és ${n(m.pesMin)}–${n(m.pesMax)} kg: és un bon primer objectiu intermedi, i després en pots fixar un altre.</div>`;
+    },
+    ok: d => {
+      if (!inRange(d.pes_objectiu, 35, 250)) return false;
+      const v = +d.pes_objectiu, p = +d.pes, h = d.alcada / 100;
+      if (v < 18.5 * h * h) return false;
+      return d.objectiu === 'perdre' ? v < p : v > p;
+    },
+  },
+  data_objectiu: {
+    q: () => 'Per a quina data?', sub: () => 'Tria una opció ràpida o escriu la data. Et diem a l\'instant si el ritme és realista.',
+    html: d => `<input id="wzin" type="date" class="txt" data-f="data_objectiu" min="${addDays(todayStr(), 7)}" max="${addDays(todayStr(), 1095)}" value="${validDate(d.data_objectiu) ? d.data_objectiu : ''}">`,
+    fb: d => {
+      const m = calc(d); const t = todayStr();
+      const picks = [...(m.dataRealista ? [['⭐ Ritme recomanat', m.dataRealista]] : []), ['3 mesos', addDays(t, 91)], ['6 mesos', addDays(t, 182)], ['1 any', addDays(t, 365)]];
+      let fb = '';
+      const ok = validDate(d.data_objectiu);
+      if (ok && ts(d.data_objectiu) <= ts(t)) fb = `<div class="feedback fb-orange">La data ha de ser posterior a avui.</div>`;
+      else if (ok && m.ritme != null) {
+        const cls = { green: 'fb-green', orange: 'fb-orange', red: 'fb-red' }[m.val.status];
+        const loss = d.objectiu === 'perdre';
+        fb = `<div class="feedback ${cls}"><b>${m.val.label}</b> · ${fmtDate(d.data_objectiu)} · ${nf(Math.abs(m.ritme), 2)} kg/setmana (${nf(m.ritmePct, 2)}% del pes) · ${n(m.kcal, 0)} kcal/dia
+          ${rangeBar({ min: 0, max: loss ? 1.5 : .75, zones: loss ? [[.75, 'green'], [1, 'orange'], [1.5, 'red']] : [[.25, 'green'], [.5, 'orange'], [.75, 'red']], value: Math.min(m.ritmePct, loss ? 1.5 : .75), lo: loss ? .75 : .25, hi: loss ? 1 : .5, loLabel: 'Realista ≤', hiLabel: 'Excessiu >', unit: '%', d: 2 })}
+          ${m.val.status !== 'green' && m.dataRealista ? `<div style="margin-top:10px">Et proposem el <b>${fmtDate(m.dataRealista)}</b>. <button class="link" data-act="setv" data-f="data_objectiu" data-v="${m.dataRealista}">Fes-la servir</button></div>` : ''}</div>`;
+      } else if (ok && m.val?.warn) fb = `<div class="feedback fb-orange">${esc(m.val.warn)}</div>`;
+      return `<div class="quick">${picks.map(([l, v]) => `<button data-act="setv" data-f="data_objectiu" data-v="${v}" class="${d.data_objectiu === v ? 'on' : ''}">${l} · ${fmtShort(v)}</button>`).join('')}</div>${fb}`;
+    }, ok: d => validDate(d.data_objectiu) && ts(d.data_objectiu) > ts(todayStr()),
+  },
+  resum: {
+    q: d => 'Tot a punt! Revisa-ho', sub: () => 'Toca qualsevol resposta per canviar-la.',
+    html: d => {
+      const m = calc(d);
+      const rows = [['nom', 'Nom', d.nom], ['sexe', 'Sexe', SEX[d.sexe]], ['edat', 'Edat', d.edat + ' anys'], ['alcada', 'Alçada', n(d.alcada) + ' cm'], ['pes', 'Pes', n(d.pes) + ' kg'], ['cintura', 'Cintura', d.cintura ? n(d.cintura) + ' cm' : 'No indicada'],
+        ['complexio', 'Complexió', COMPLEX[d.complexio]?.label], ['activitat', 'Dia a dia', ACT[d.activitat]?.label], ['fa_esport', 'Esport', d.fa_esport ? d.esports.map(e => SPORT[e.sport].label).join(', ') : 'Cap'],
+        ['objectiu', 'Objectiu', GOALS[d.objectiu]?.label], ...(d.objectiu !== 'mantenir' ? [['pes_objectiu', 'Pes objectiu', n(d.pes_objectiu) + ' kg'], ['data_objectiu', 'Data', fmtDate(d.data_objectiu)]] : [])];
+      return `<div class="recap">${rows.map(([id, k, v]) => `<button data-act="goto" data-step="${id}"><span>${k}</span><b>${esc(v)}</b></button>`).join('')}</div>
+        ${m.kcal ? `<div class="feedback fb-green" style="display:flex;gap:16px;flex-wrap:wrap;justify-content:space-around;text-align:center">
+          <div><div class="h num" style="font-size:26px;font-weight:700">${n(m.kcal, 0)}</div><div class="small">kcal/dia</div></div>
+          <div><div class="h num" style="font-size:26px;font-weight:700">${nf(m.imc?.value, 1)}</div><div class="small">IMC</div></div>
+          <div><div class="h num" style="font-size:26px;font-weight:700">${nf(m.greix?.value, 1)}%</div><div class="small">greix</div></div>
+          <div><div class="h num" style="font-size:26px;font-weight:700">${n(m.prot?.value, 0)} g</div><div class="small">proteïna</div></div></div>` : ''}`;
+    }, ok: () => true,
+  },
+};
+function sportList(sel) {
+  const f = WZ.filter.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const list = SPORTS.filter(s => !f || (s.label + ' ' + s.cat).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(f));
+  const cats = [...new Set(list.map(s => s.cat))];
+  if (!list.length) return `<p class="muted">Cap esport coincideix. Prova amb una altra paraula o tria el més semblant.</p>`;
+  return cats.map(c => `<div class="cat">${c}</div><div class="chips">${list.filter(s => s.cat === c).map(s => `<button class="chipx ${sel.has(s.id) ? 'on' : ''}" data-act="toggle-sport" data-v="${s.id}"><span>${s.em}</span>${s.label}</button>`).join('')}</div>`).join('');
+}
+function sportStep(sid) {
+  const d = WZ.draft; const e = d.esports.find(x => x.sport === sid); const s = SPORT[sid];
+  const i = d.esports.findIndex(x => x.sport === sid);
+  const k = sportKcal(e, +d.pes);
+  return {
+    q: `${s.label}`, sub: '',
+    html: `<div class="sport-head"><div class="em">${s.em}</div><div><div class="counter">Esport ${i + 1} de ${d.esports.length}</div><div class="h" style="font-size:15px;color:var(--muted)">≈ <b class="num" style="color:var(--brand)" id="spk">${n(k, 0)}</b> kcal/setmana</div></div></div>
+      <div class="sub-q">Quants dies a la setmana?</div>
+      <div class="daypick">${[1, 2, 3, 4, 5, 6, 7].map(v => `<button class="${e.dies === v ? 'on' : ''}" data-act="sport-set" data-k="dies" data-v="${v}">${v}</button>`).join('')}</div>
+      <div class="sub-q">Quant dura cada sessió?</div>
+      <div class="quick" style="margin-top:0">${[20, 30, 45, 60, 75, 90, 120].map(v => `<button class="${e.minuts === v ? 'on' : ''}" data-act="sport-set" data-k="minuts" data-v="${v}">${v < 60 ? v + ' min' : (v / 60 === Math.floor(v / 60) ? v / 60 + ' h' : n(v / 60, 2) + ' h')}</button>`).join('')}</div>
+      <div class="sub-q">Amb quina intensitat?</div>
+      <div class="opts c3">${Object.entries(INTENS).map(([kk, o]) => `<button class="opt ${e.intensitat === kk ? 'on' : ''}" data-act="sport-set" data-k="intensitat" data-v="${kk}"><span class="em">${o.em}</span><span><b>${o.label}</b><p>${o.desc}</p></span></button>`).join('')}</div>`,
+    ok: true,
+  };
+}
+
+function openWizard(stepId, edit) {
+  WZ.open = true; WZ.editMode = !!edit; WZ.filter = '';
+  WZ.draft = Object.assign(clone(DEFAULTS), clone(S().profile || {}));
+  if (S().profile) WZ.draft.pes = currentWeight();
+  WZ.id = stepId || wzSteps(WZ.draft)[0].id; WZ.dir = 1;
+  renderWizard();
+}
+function closeWizard() { WZ.open = false; const el = $('#wz'); if (el) el.remove(); document.body.style.overflow = ''; }
+function wzCurrent() {
+  const steps = wzSteps(WZ.draft); let idx = steps.findIndex(s => s.id === WZ.id);
+  if (idx < 0) { idx = 0; WZ.id = steps[0].id; }
+  return { steps, idx, step: steps[idx] };
+}
+function stepDef(id) { if (id.startsWith('sport:')) { const s = sportStep(id.slice(6)); return { q: () => s.q, sub: () => s.sub, html: () => s.html, ok: () => true }; } return STEP[id]; }
+
+function renderWizard() {
+  let el = $('#wz');
+  if (!el) { el = document.createElement('div'); el.id = 'wz'; el.className = 'wz'; document.body.appendChild(el); document.body.style.overflow = 'hidden'; }
+  const { steps, idx, step } = wzCurrent();
+  const def = stepDef(step.id); const d = WZ.draft;
+  const pct = Math.round(idx / (steps.length - 1) * 100);
+  const isLast = step.id === 'resum';
+  const canBack = idx > 0;
+  el.innerHTML = `<div class="wz-main">
+      <div class="wz-head"><button class="wz-close" data-act="wz-close" title="Tancar">✕</button><div class="wz-progress"><div style="width:${Math.max(4, pct)}%"></div></div><div class="wz-sec">${step.sec}</div></div>
+      <div class="wz-mini" id="wzmini"></div>
+      <div class="wz-body"><div class="wz-step ${WZ.dir < 0 ? 'back' : ''}" id="wzstep">
+        <h2 class="wz-q">${def.q(d)}</h2>${def.sub(d) ? `<p class="wz-sub">${def.sub(d)}</p>` : '<div style="height:18px"></div>'}
+        <div id="wzhtml">${def.html(d)}</div><div id="wzfb">${def.fb ? def.fb(d) : ''}</div>
+      </div></div>
+      <div class="wz-foot">
+        <div style="display:flex;gap:10px;align-items:center">${canBack ? `<button class="btn ghost" data-act="wz-back" style="min-width:0">← Enrere</button>` : ''}<span class="kbd">Prem <b>Enter ↵</b></span></div>
+        <div style="display:flex;gap:10px;align-items:center">${def.skip && !isLast ? `<button class="btn ghost" data-act="wz-skip" style="min-width:0">${def.skip}</button>` : ''}
+        <button class="btn" id="wznext" data-act="wz-next" ${def.ok(d) ? '' : 'disabled'}>${isLast ? (WZ.editMode ? 'Desar canvis ✓' : 'Calcular el meu pla ✓') : (WZ.editMode && S().profile ? 'Següent →' : 'Continuar →')}</button></div>
+      </div></div>
+    <aside class="wz-side" id="wzside"></aside>`;
+  renderLive(true);
+  const inp = $('#wzin', el); if (inp && window.matchMedia('(min-width: 700px)').matches) { inp.focus(); if (inp.select && inp.type !== 'date') try { inp.select(); } catch (e) {} }
+  const se = $('#wzsearch', el); if (se && window.matchMedia('(min-width: 700px)').matches) se.focus();
+}
+let lastLive = {};
+function renderLive(full) {
+  const d = WZ.draft; const m = calc(d);
+  const items = [
+    ['imc', 'IMC', m.imc ? `${nf(m.imc.value, 1)} <small>${m.imc.label}</small>` : null, 'alçada i pes'],
+    ['greix', '% greix', m.greix ? `${nf(m.greix.value, 1)}% <small>${m.greix.label}</small>` : null, 'sexe i edat'],
+    ['rang', 'Pes saludable', m.pesMin && d.complexio ? `${n(m.pesMin, 0)}–${n(m.pesMax, 0)} <small>kg</small>` : null, 'prova del canell'],
+    ['mb', 'Metabolisme basal', m.mb ? `${n(m.mb, 0)} <small>kcal</small>` : null, 'sexe, edat, alçada i pes'],
+    ['esp', 'Esport', m.det != null && d.fa_esport != null ? `${n(m.espSetm, 0)} <small>kcal/setmana</small>` : null, 'esports'],
+    ['det', 'Despesa total', m.det && d.fa_esport != null ? `${n(m.det, 0)} <small>kcal/dia</small>` : null, 'activitat'],
+    ['kcal', 'Calories objectiu', m.kcal && d.objectiu ? `${n(m.kcal, 0)} <small>kcal/dia</small>` : null, 'objectiu'],
+  ];
+  const side = $('#wzside');
+  if (side) side.innerHTML = `<h3>El teu pla en directe</h3><p class="small muted" style="margin:6px 0 0">Es va omplint mentre respons.</p>
+    <div class="live">${items.map(([k, l, v, need]) => `<div class="it ${v ? '' : 'locked'} ${v && !lastLive[k] && !full ? 'pop' : ''}"><div class="l">${l}</div><div class="v num">${v || '🔒 Falta: ' + need}</div></div>`).join('')}</div>`;
+  const mini = $('#wzmini');
+  if (mini) mini.innerHTML = items.filter(i => i[2]).map(([k, l, v]) => `<span>${l}: <b>${v.replace(/<small>.*<\/small>/, '').trim()}</b></span>`).join('');
+  lastLive = Object.fromEntries(items.map(i => [i[0], !!i[2]]));
+}
+function refreshStepBody() { // re-render només el contingut (sense perdre l'animació de canvi de pas)
+  const { step } = wzCurrent(); const def = stepDef(step.id);
+  const h = $('#wzhtml'); if (!h) return;
+  const scroll = $('.wz-main').scrollTop;
+  h.innerHTML = def.html(WZ.draft);
+  const f = $('#wzfb'); if (f) f.innerHTML = def.fb ? def.fb(WZ.draft) : '';
+  $('.wz-main').scrollTop = scroll;
+  updateNext(); renderLive();
+}
+function refreshFeedback() { // només el missatge: l'input no es torna a pintar (evita que el cursor salti)
+  const { step } = wzCurrent(); const def = stepDef(step.id);
+  const f = $('#wzfb'); if (f && def.fb) f.innerHTML = def.fb(WZ.draft);
+  updateNext(); renderLive();
+}
+function updateNext() { const { step } = wzCurrent(); const b = $('#wznext'); if (b) b.disabled = !stepDef(step.id).ok(WZ.draft); }
+function wzGo(delta) {
+  const { steps, idx, step } = wzCurrent();
+  if (delta > 0 && !stepDef(step.id).ok(WZ.draft)) return;
+  if (delta > 0 && step.id === 'resum') return finishWizard();
+  const ni = clamp(idx + delta, 0, steps.length - 1); if (ni === idx) return;
+  WZ.dir = delta; WZ.id = wzSteps(WZ.draft)[ni].id; renderWizard();
+  $('.wz-main').scrollTop = 0;
+}
+async function finishWizard() {
+  const d = WZ.draft; const old = S().profile;
+  if (CFG.estudi && !S().participant && isEmail(d.email)) {
+    const now = new Date().toISOString();
+    S().participant = { id: genCode(), email: d.email.trim().toLowerCase(), pinHash: await pinHash(d.email, d.pin), registeredAt: now, consentAt: now, consentText: consentText(), synced: false };
+  }
+  const p = {
+    nom: d.nom.trim(), sexe: d.sexe, edat: +d.edat, alcada: +d.alcada, pes: +d.pes, cintura: d.cintura === '' ? null : +d.cintura,
+    complexio: d.complexio, activitat: d.activitat, fa_esport: !!d.fa_esport, esports: d.fa_esport ? d.esports.map(e => ({ ...e })) : [],
+    objectiu: d.objectiu, pes_objectiu: d.objectiu === 'mantenir' ? null : +d.pes_objectiu, data_objectiu: d.objectiu === 'mantenir' ? null : d.data_objectiu,
+  };
+  const t = todayStr();
+  const newGoal = !old || old.objectiu !== p.objectiu || old.pes_objectiu !== p.pes_objectiu || old.data_objectiu !== p.data_objectiu;
+  p.data_inicial = newGoal || !old?.data_inicial ? t : old.data_inicial;
+  p.pes_inicial = newGoal || !old?.pes_inicial ? p.pes : old.pes_inicial;
+  S().profile = p;
+  // si el pes del perfil és nou, crea/actualitza el registre d'avui
+  const lw = lastEntry();
+  if (!lw || Math.abs(lw.pes - p.pes) > 0.001) {
+    const today = S().entries.find(e => e.date === t);
+    if (today) { today.pes = p.pes; if (p.cintura) today.cintura = p.cintura; }
+    else S().entries.push({ id: uid(), date: t, pes: p.pes, cintura: p.cintura || null, obs: old ? 'Actualització del perfil' : 'Inici del pla' });
+  }
+  const m = calc(p);
+  S().history.push({ date: t, event: !old ? 'Alta' : newGoal ? 'Nou objectiu' : 'Dades actualitzades', pes: p.pes, objectiu: p.objectiu, pes_objectiu: p.pes_objectiu, imc: +m.imc.value.toFixed(2), greix: +m.greix.value.toFixed(1), kcal: Math.round(m.kcal) });
+  Store.save(); closeWizard();
+  if (!old) { location.hash = '#inici'; }
+  render();
+  toast(old ? 'Dades desades i recalculades ✓' : `Pla creat! ${n(m.kcal, 0)} kcal/dia 🎯`);
+}
+
+/* =========================================================
+   CHECK-IN — registre en 3 passos
+   ========================================================= */
+const CI = { step: 0, d: null };
+function openCheckin() {
+  const le = lastEntry();
+  CI.step = 0; CI.d = { date: todayStr(), pes: le?.pes ?? S().profile.pes, cintura: '', sens: {}, obs: '' };
+  renderCheckin();
+}
+function closeCheckin() { const el = $('#ci-ov'); if (el) el.remove(); }
+function renderCheckin() {
+  let ov = $('#ci-ov');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'ci-ov'; ov.className = 'ov'; document.body.appendChild(ov); ov.addEventListener('click', e => { if (e.target === ov) closeCheckin(); }); }
+  const d = CI.d, le = lastEntry();
+  const delta = le ? +d.pes - le.pes : null;
+  const pr = projection(S().profile); const prev = pr ? pr.at(ts(d.date)) : null;
+  const steps = [
+    { q: 'Quant peses avui?', html: `<div class="bignum"><button class="pm" data-act="ci-inc" data-s="-0.1">−</button><div class="field"><input id="ciin" type="number" step="0.1" inputmode="decimal" value="${d.pes}"><span class="u">kg</span></div><button class="pm" data-act="ci-inc" data-s="0.1">+</button></div>
+      <div id="ci-delta">${deltaPill(delta, prev, d.pes)}</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:18px"><span class="small muted">Data</span><input type="date" class="date" id="cidate" value="${d.date}" max="${todayStr()}"></div>`, ok: () => inRange(d.pes, 30, 300) },
+    { q: 'I la cintura? (opcional)', html: `<div class="bignum"><button class="pm" data-act="ci-incw" data-s="-0.5">−</button><div class="field"><input id="ciw" type="number" step="0.5" inputmode="decimal" value="${d.cintura}" placeholder="${currentWaist() || '—'}"><span class="u">cm</span></div><button class="pm" data-act="ci-incw" data-s="0.5">+</button></div>
+      <p class="small muted" style="margin-top:12px">${currentWaist() ? `Últim valor: ${n(currentWaist())} cm. ` : ''}Mesura-la cada 2–4 setmanes, sempre al mateix punt.</p>`, ok: () => d.cintura === '' || inRange(d.cintura, 40, 220) },
+    { q: 'Com t\'has sentit aquesta setmana?', html: ['energia|Energia|Sense forces|A tope', 'gana|Gana|Molta gana|Cap problema', 'son|Son|Dormo malament|Dormo molt bé'].map(r => { const [k, l, lo, hi] = r.split('|'); return `<div class="sub-q" style="margin-top:14px">${l}</div><div class="scale">${['😫', '😕', '😐', '🙂', '😄'].map((e, i) => `<button class="${d.sens[k] === i + 1 ? 'on' : ''}" data-act="ci-sens" data-k="${k}" data-v="${i + 1}">${e}</button>`).join('')}</div><div class="scale-l"><span>${lo}</span><span>${hi}</span></div>`; }).join('') + `<textarea class="txt" id="ciobs" placeholder="Alguna nota? (sopar fora, setmana d'exàmens, lesió…)" style="margin-top:18px">${esc(d.obs)}</textarea>`, ok: () => true },
+  ];
+  const st = steps[CI.step];
+  ov.innerHTML = `<div class="modal"><div class="mh"><div class="dots">${steps.map((_, i) => `<i class="${i <= CI.step ? 'on' : ''}"></i>`).join('')}</div><button class="wz-close" data-act="ci-close">✕</button></div>
+    <div class="mb"><h2 class="wz-q">${st.q}</h2>${st.html}</div>
+    <div class="mf">${CI.step > 0 ? `<button class="btn ghost" data-act="ci-back">← Enrere</button>` : '<span></span>'}
+      <div style="display:flex;gap:8px">${CI.step > 0 && CI.step < 2 ? `<button class="btn ghost" data-act="ci-next">Salta</button>` : ''}<button class="btn" id="cinext" data-act="${CI.step === 2 ? 'ci-save' : 'ci-next'}" ${st.ok() ? '' : 'disabled'}>${CI.step === 2 ? 'Desar registre ✓' : 'Següent →'}</button></div></div></div>`;
+  const i = $('#ciin') || $('#ciw'); if (i && window.matchMedia('(min-width: 700px)').matches) { i.focus(); try { i.select(); } catch (e) {} }
+}
+function deltaPill(delta, prev, pes) {
+  if (delta == null || isNaN(delta)) return '';
+  const loss = S().profile.objectiu === 'perdre';
+  const good = Math.abs(delta) < 0.05 ? null : loss ? delta < 0 : S().profile.objectiu === 'mantenir' ? Math.abs(delta) < .5 : delta > 0;
+  const col = good == null ? 'background:#F1F5F9;color:#475569' : good ? 'background:#DCFCE7;color:#166534' : 'background:#FEF3C7;color:#92400E';
+  return `<span class="delta-pill" style="${col}">${delta > 0 ? '▲ +' : delta < 0 ? '▼ −' : '= '}${nf(Math.abs(delta), 1)} kg respecte l'últim registre</span>`
+    + (prev != null ? `<div class="small muted" style="margin-top:8px">Segons el teu pla, avui hauries d'estar a <b class="num">${n(prev)} kg</b>.</div>` : '');
+}
+function saveCheckin() {
+  const d = CI.d; const le = lastEntry();
+  const e = { id: uid(), date: d.date, pes: +(+d.pes).toFixed(1), cintura: d.cintura === '' ? null : +d.cintura, sens: Object.keys(d.sens).length ? d.sens : null, obs: d.obs.trim() };
+  const same = S().entries.find(x => x.date === e.date);
+  if (same) Object.assign(same, { ...e, id: same.id }); else S().entries.push(e);
+  Store.save(); closeCheckin(); render();
+  const delta = le && le.date !== e.date ? e.pes - le.pes : null;
+  const loss = S().profile.objectiu === 'perdre';
+  toast(delta == null ? 'Registre desat ✓' : (loss && delta < 0) || (!loss && delta > 0) ? `${delta > 0 ? '+' : '−'}${nf(Math.abs(delta), 1)} kg. Bona feina! 👏` : 'Registre desat. Mira la tendència, no un dia concret 📈');
+}
+
+/* =========================================================
+   DEMO
+   ========================================================= */
+function loadDemo() {
+  const t = todayStr(); const start = addDays(t, -70);
+  const p = { nom: 'Àlex', sexe: 'home', edat: 35, alcada: 178, pes: 92, cintura: 99, complexio: 'normal', activitat: 'lleuger', fa_esport: true,
+    esports: [{ sport: 'forca', dies: 3, minuts: 60, intensitat: 'moderada' }, { sport: 'correr', dies: 2, minuts: 45, intensitat: 'moderada' }, { sport: 'padel', dies: 1, minuts: 90, intensitat: 'intensa' }],
+    objectiu: 'perdre', pes_objectiu: 82, data_objectiu: addDays(start, 140), data_inicial: start, pes_inicial: 92 };
+  const entries = []; let w = 92, c = 99;
+  const notes = ['Inici del pla', '', 'Setmana dura a la feina', '', 'Sopar d\'aniversari', '', '', 'Molt bona setmana', '', '', ''];
+  for (let i = 0; i <= 10; i++) {
+    if (i) { w += -0.62 + (Math.sin(i * 1.7) * 0.35); c -= 0.55 + (i % 3 === 0 ? 0.3 : 0); }
+    entries.push({ id: uid(), date: addDays(start, i * 7), pes: +w.toFixed(1), cintura: i % 2 === 0 ? +c.toFixed(1) : null,
+      sens: i ? { energia: 3 + (i % 3 ? 1 : 0), gana: i < 3 ? 2 : 3 + (i % 2), son: 3 + (i % 2) } : null, obs: notes[i] || '' });
+  }
+  p.pes = 92;
+  S().profile = p; S().entries = entries;
+  S().history = [{ date: start, event: 'Alta', pes: 92, objectiu: 'perdre', pes_objectiu: 82, imc: 29.04, greix: 27.4, kcal: 2150 }];
+  S().food = {}; S().diets = []; S().plan = null;
+  const ix = nm => FOOD_IDX[nm];
+  if (HAS_FOODS) for (let k = 13; k >= 0; k--) {
+    const d = addDays(t, -k); const v = (k % 3) * 20;
+    S().food[d] = [[0, ix('Pan integral'), 60 + v], [0, ix('Tomate'), 40], [0, ix('Aceite de oliva virgen extra'), 5], [0, ix('Jamón serrano'), 30], [0, ix('Café, con leche'), 200],
+      [1, ix('Manzana'), 160], [2, ix('Arroz, hervido'), 170 + v * 2], [2, ix('Pollo, pechuga, plancha'), 140], [2, ix('Lechuga'), 80], [2, ix('Aceite de oliva virgen extra'), 10],
+      ...(k ? [[3, ix('Yogur, desnatado, sabor natural'), 125], [4, ix('Merluza fresca'), 180], [4, ix('Patata, hervida'), 150 + v * 3], [4, ix('Brécol, hervido'), 150], [4, ix('Aceite de oliva virgen extra'), 10]] : [])]
+      .map(([m, i, g]) => [m, i, g, uid()]);
+  }
+  Store.save(); location.hash = '#inici'; render();
+  toast('Dades d\'exemple carregades. Esborra-les des del perfil quan vulguis.');
+}
+
+/* =========================================================
+   EVENTS
+   ========================================================= */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const a = b.dataset.act, d = WZ.draft;
+  switch (a) {
+    case 'start': openWizard(); break;
+    case 'demo': loadDemo(); break;
+    case 'edit': e.preventDefault(); openWizard(b.dataset.step, true); break;
+    case 'checkin': openCheckin(); break;
+    case 'tab': ui.tab = b.dataset.tab; render(); break;
+    case 'range': ui.range = b.dataset.r; render(); break;
+    case 'del-entry': {
+      const id = b.dataset.id; const idx = S().entries.findIndex(x => x.id === id); const [rem] = S().entries.splice(idx, 1);
+      Store.save(); render(); toast('Registre esborrat', { label: 'Desfer', fn: () => { S().entries.push(rem); Store.save(); render(); } }); break;
+    }
+    case 'ask-wipe': ui.confirmDel = true; render(); break;
+    case 'cancel-wipe': ui.confirmDel = false; render(); break;
+    case 'wipe': Store.state = EMPTY_STATE(); ui.confirmDel = false; Store.save(); location.hash = '#inici'; render(); toast('Dades esborrades'); break;
+    case 'copy': navigator.clipboard.writeText(JSON.stringify(S(), null, 2)).then(() => toast('Dades copiades al porta-retalls'), () => toast('No s\'ha pogut copiar')); break;
+    // wizard
+    case 'wz-close': closeWizard(); if (!S().profile) render(); break;
+    case 'wz-back': wzGo(-1); break;
+    case 'wz-next': wzGo(1); break;
+    case 'wz-skip': d.cintura = ''; wzGo(1); break;
+    case 'goto': WZ.dir = -1; WZ.id = b.dataset.step; renderWizard(); break;
+    case 'pick': {
+      const f = b.dataset.f; let v = b.dataset.v;
+      if (f === 'fa_esport') v = v === 'si';
+      d[f] = v;
+      if (f === 'objectiu' && v === 'mantenir') { d.pes_objectiu = ''; d.data_objectiu = ''; }
+      if (f === 'objectiu' && v !== 'mantenir' && d.pes_objectiu && ((v === 'perdre') !== (+d.pes_objectiu < +d.pes))) d.pes_objectiu = '';
+      refreshStepBody();
+      setTimeout(() => wzGo(1), 260);
+      break;
+    }
+    case 'inc': {
+      const f = b.dataset.f; const s = +b.dataset.s; const cur = +d[f] || (f === 'cintura' ? 90 : f === 'pes_objectiu' ? +d.pes : f === 'edat' ? 30 : 0);
+      d[f] = +clamp(cur + (d[f] === '' ? 0 : s), +b.dataset.min, +b.dataset.max).toFixed(1);
+      const inp = $('#wzin'); if (inp) inp.value = d[f]; const r = $('#wzrange'); if (r) r.value = d[f];
+      refreshFeedback();
+      break;
+    }
+    case 'setv': { d[b.dataset.f] = b.dataset.f === 'pes_objectiu' ? +b.dataset.v : b.dataset.v; const inp = $('#wzin'); if (inp) inp.value = d[b.dataset.f]; refreshFeedback(); break; }
+    case 'toggle-sport': {
+      const id = b.dataset.v; const i = d.esports.findIndex(x => x.sport === id);
+      if (i >= 0) d.esports.splice(i, 1); else d.esports.push({ sport: id, dies: 2, minuts: 60, intensitat: 'moderada' });
+      b.classList.toggle('on'); updateNext(); renderLive(); updateProgress();
+      break;
+    }
+    case 'sport-set': {
+      const sid = WZ.id.slice(6); const ent = d.esports.find(x => x.sport === sid); const k = b.dataset.k;
+      ent[k] = k === 'intensitat' ? b.dataset.v : +b.dataset.v; refreshStepBody(); break;
+    }
+    // check-in
+    case 'ci-close': closeCheckin(); break;
+    case 'ci-next': CI.step++; renderCheckin(); break;
+    case 'ci-back': CI.step--; renderCheckin(); break;
+    case 'ci-save': saveCheckin(); break;
+    case 'ci-inc': CI.d.pes = +(+CI.d.pes + +b.dataset.s).toFixed(1); $('#ciin').value = CI.d.pes; ciDelta(); break;
+    case 'ci-incw': CI.d.cintura = +((+CI.d.cintura || currentWaist() || 90) + (CI.d.cintura === '' ? 0 : +b.dataset.s)).toFixed(1); $('#ciw').value = CI.d.cintura; $('#cinext').disabled = false; break;
+    case 'ci-sens': { const k = b.dataset.k; CI.d.sens[k] = CI.d.sens[k] === +b.dataset.v ? undefined : +b.dataset.v; if (!CI.d.sens[k]) delete CI.d.sens[k]; CI.d.obs = $('#ciobs')?.value || CI.d.obs; renderCheckin(); break; }
+  }
+});
+function updateProgress() {
+  const { steps, idx } = wzCurrent(); const bar = $('.wz-progress div'); if (bar) bar.style.width = Math.max(4, Math.round(idx / (steps.length - 1) * 100)) + '%';
+}
+function ciDelta() {
+  const le = lastEntry(); const pr = projection(S().profile);
+  const el = $('#ci-delta'); if (el) el.innerHTML = deltaPill(le ? +CI.d.pes - le.pes : null, pr ? pr.at(ts(CI.d.date)) : null, CI.d.pes);
+  const nb = $('#cinext'); if (nb) nb.disabled = !inRange(CI.d.pes, 30, 300);
+}
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (WZ.open && t.id === 'wzin') { WZ.draft[t.dataset.f] = t.type === 'number' ? (t.value === '' ? '' : +t.value) : t.value; const r = $('#wzrange'); if (r && t.value) r.value = t.value; refreshFeedback(); }
+  if (WZ.open && t.id === 'wzrange') { WZ.draft[t.dataset.f] = +t.value; $('#wzin').value = t.value; updateNext(); renderLive(); }
+  if (WZ.open && t.id === 'wzsearch') { WZ.filter = t.value; $('#sportlist').innerHTML = sportList(new Set(WZ.draft.esports.map(x => x.sport))); }
+  if (t.id === 'ciin') { CI.d.pes = t.value === '' ? '' : +t.value; ciDelta(); }
+  if (t.id === 'ciw') { CI.d.cintura = t.value === '' ? '' : +t.value; $('#cinext').disabled = !(CI.d.cintura === '' || inRange(CI.d.cintura, 40, 220)); }
+  if (t.id === 'cidate') { CI.d.date = t.value || todayStr(); ciDelta(); }
+  if (t.id === 'ciobs') CI.d.obs = t.value;
+});
+document.addEventListener('keydown', e => {
+  if ($('#ci-ov')) {
+    if (e.key === 'Escape') closeCheckin();
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') { const b = $('#cinext'); if (b && !b.disabled) { e.preventDefault(); b.click(); } }
+    return;
+  }
+  if (!WZ.open) return;
+  if (e.key === 'Escape') { closeWizard(); if (!S().profile) render(); return; }
+  if (e.key === 'Enter') { e.preventDefault(); wzGo(1); return; }
+  if (/^[1-9]$/.test(e.key) && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+    const opts = [...document.querySelectorAll('#wzhtml .opt[data-act=pick]')]; const o = opts[+e.key - 1]; if (o) o.click();
+  }
+  if (e.key === 'Backspace' && e.altKey) wzGo(-1);
+});
+
+/* =========================================================
+   ALIMENTACIÓ — diari, menú automàtic, dietes, guia de racions
+   ========================================================= */
+const MEALS = [
+  { k: 'esmorzar', label: 'Esmorzar', em: '🥣', share: 0.22 },
+  { k: 'mig_mati', label: 'Mig matí', em: '🍎', share: 0.10 },
+  { k: 'dinar', label: 'Dinar', em: '🍽️', share: 0.35 },
+  { k: 'berenar', label: 'Berenar', em: '🥪', share: 0.10 },
+  { k: 'sopar', label: 'Sopar', em: '🌙', share: 0.23 },
+];
+const HAS_FOODS = typeof FOODS !== 'undefined' && FOODS.length > 0;
+const FOOD_IDX = HAS_FOODS ? Object.fromEntries(FOODS.map((r, i) => [r[0], i])) : {};
+const ZERO = { kcal: 0, p: 0, h: 0, g: 0, fib: 0, sat: 0, na: 0 };
+function nut(i, g) { const r = FOODS[i]; if (!r) return { ...ZERO }; const k = g / 100; return { kcal: r[2] * k, p: r[3] * k, h: r[4] * k, g: r[5] * k, fib: r[6] * k, sat: (r[7] || 0) * k, na: (r[8] || 0) * k }; }
+const addN = (a, b) => ({ kcal: a.kcal + b.kcal, p: a.p + b.p, h: a.h + b.h, g: a.g + b.g, fib: a.fib + b.fib, sat: a.sat + b.sat, na: a.na + b.na });
+const dayItems = date => (S().food[date] || []);
+const dayTotals = date => dayItems(date).reduce((a, it) => addN(a, nut(it[1], it[2])), { ...ZERO });
+function foodTargets(m) {
+  const d = (S().prefs || {}).dieta;
+  const kcal = m.kcal, p = d === 'proteica' ? Math.max(m.prot.value, m.prot.ref * 1.8) : m.prot.value, g = kcal * (d === 'dash' ? 0.27 : 0.3) / 9;
+  return { kcal, p, g, h: Math.max(0, (kcal - p * 4 - g * 9) / 4), fib: 25, sal: d === 'dash' ? 5.8 : 5 };
+}
+const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+/* --- cerca en català i castellà --- */
+const SYN = {
+  pollastre: 'pollo', poma: 'manzana', ou: 'huevo', ous: 'huevo', llet: 'leche', pa: 'pan', arros: 'arroz', formatge: 'queso', mato: 'requeson', peix: 'pescado',
+  vedella: 'ternera', porc: 'cerdo', tomaquet: 'tomate', enciam: 'lechuga', ceba: 'cebolla', all: 'ajo', pastanaga: 'zanahoria', platan: 'platano', taronja: 'naranja',
+  maduixa: 'fresa', maduixes: 'fresa', pressec: 'melocoton', raim: 'uva', iogurt: 'yogur', mantega: 'mantequilla', oli: 'aceite', llenties: 'lenteja', llentia: 'lenteja',
+  cigrons: 'garbanzo', cigro: 'garbanzo', mongeta: 'judia', mongetes: 'judia', tonyina: 'atun', salmo: 'salmon', lluc: 'merluza', gambes: 'gamba', calamars: 'calamar',
+  carbasso: 'calabacin', carbassa: 'calabaza', alberginia: 'berenjena', pebrot: 'pimiento', broquil: 'brecol', espinacs: 'espinaca', xocolata: 'chocolate', galeta: 'galleta',
+  galetes: 'galleta', cereals: 'cereales', civada: 'avena', ametlla: 'almendra', ametlles: 'almendra', nou: 'nuez', nous: 'nuez', pernil: 'jamon', xorico: 'chorizo',
+  botifarra: 'butifarra', cafe: 'cafe', cervesa: 'cerveza', vi: 'vino', aigua: 'agua', sucre: 'azucar', mel: 'miel', 'gall dindi': 'pavo', galldindi: 'pavo', dindi: 'pavo',
+  conill: 'conejo', xai: 'cordero', bacalla: 'bacalao', musclos: 'mejillon', musclo: 'mejillon', macarrons: 'pasta alimenticia', espaguetis: 'pasta alimenticia', pasta: 'pasta alimenticia', truita: 'tortilla', alvocat: 'aguacate',
+  sindria: 'sandia', melo: 'melon', cirera: 'cereza', cireres: 'cereza', pinya: 'pina', llimona: 'limon', suc: 'zumo', refresc: 'refresco', patates: 'patata', bolets: 'seta',
+  xampinyons: 'champinon', cogombre: 'pepino', api: 'apio', nata: 'nata', sardines: 'sardina', anxoves: 'anchoa', seitons: 'boqueron', sipia: 'sepia', pop: 'pulpo',
+  llagostins: 'langostino', orada: 'dorada', llobarro: 'lubina', rap: 'rape', fuet: 'fuet', llonganissa: 'longaniza', melmelada: 'mermelada', magdalena: 'magdalena',
+  croissant: 'croissant', pizza: 'pizza', hamburguesa: 'hamburguesa', amanida: 'ensalada', gaspatxo: 'gazpacho', paella: 'paella', crema: 'crema', fruits: 'frutos', secs: 'secos',
+  planxa: 'plancha', bullit: 'hervid', bullida: 'hervid', bullits: 'hervid', cuit: 'hervid', cuita: 'hervid', cuits: 'hervid', forn: 'horno', fregit: 'frit', fregida: 'frit', cru: 'crud', crua: 'crud',
+  rostit: 'asad', brou: 'caldo', conserva: 'conserva', llauna: 'conserva', desnatat: 'desnatad', semidesnatada: 'semidesnatad', natural: 'natural', blanc: 'blanc', negre: 'negr',
+  pera: 'pera', kiwi: 'kiwi', mandarina: 'mandarina', soja: 'soja', tofu: 'tofu', quinoa: 'quinoa', integral: 'integral', torrada: 'tostado', torrades: 'tostado',
+};
+function searchFoods(q, cat = -1, limit = 40) {
+  const words = norm(q).split(/\s+/).filter(w => w.length > 1 || /^\d/.test(w));
+  const full = [], partial = [];
+  for (let i = 0; i < FOODS.length; i++) {
+    const r = FOODS[i]; if (cat >= 0 && r[1] !== cat) continue;
+    const nm = norm(r[0]); let score = 0, hits = 0;
+    words.forEach((w, wi) => {
+      const alts = [w, SYN[w], w.length > 4 ? w.slice(0, -1) : null].filter(Boolean);
+      const hit = alts.find(a => nm.includes(a)); if (!hit) return;
+      hits++; score += (nm.startsWith(hit) ? 30 : new RegExp('(^|[\\s,])' + hit).test(nm) ? 15 : 5) * (wi === 0 ? 2 : 1);
+    });
+    if (!words.length) score = 1;
+    score -= nm.length / 30;
+    if (/crudo|cruda|seco|en polvo/.test(nm)) score -= 3;
+    if (hits === words.length) full.push([score, i]); else if (hits > 0) partial.push([score + hits * 40, i]);
+  }
+  const res = (full.length ? full : partial).sort((a, b) => b[0] - a[0]);
+  return res.slice(0, limit).map(x => x[1]);
+}
+/* --- racions: unitats concretes i mesures amb la mà (sense bàscula) --- */
+const HANDS = {
+  palmell: { em: '🖐️', label: 'Palmell', desc: 'La mida i el gruix del palmell, sense els dits.', ex: 'Carn, peix, tofu, formatge fresc' },
+  puny: { em: '✊', label: 'Puny', desc: 'El volum del puny tancat (≈ 1 tassa).', ex: 'Arròs o pasta cuits, llegums cuits, verdura, fruita, patata' },
+  grapat: { em: '🤲', label: 'Grapat', desc: 'El que cap a la mà fent cassoleta.', ex: 'Fruits secs, cereals d\'esmorzar, civada, arròs o pasta en cru' },
+  polze: { em: '👍', label: 'Polze', desc: 'La mida del polze sencer (≈ 1 cullerada).', ex: 'Oli, mantega, formatge curat, salses' },
+  punta: { em: '☝️', label: 'Punta del dit', desc: 'Primera falange de l\'índex (≈ 1 culleradeta).', ex: 'Sucre, mel, sal' },
+  mans: { em: '🙌', label: 'Dues mans', desc: 'Les dues mans juntes i obertes.', ex: 'Enciam, espinacs crus i verdures de fulla' },
+};
+function portions(i) {
+  const r = FOODS[i]; const nm = norm(r[0]); const c = r[1]; const out = [];
+  const add = (label, g, em) => out.push({ label, g, em });
+  const H = (k, n, g) => add(`${n > 1 ? n + ' ' : '1 '}${HANDS[k].label.toLowerCase()}${n > 1 && k !== 'mans' ? 's' : ''}`, g * n, HANDS[k].em);
+  // unitats concretes
+  if (/^huevo de gallina/.test(nm) && !/yema|clara/.test(nm)) { add('1 ou', 60, '🥚'); add('2 ous', 120, '🥚'); }
+  if (/^pan /.test(nm) || nm === 'pan integral') { add('1 llesca', 30, '🍞'); add('1 entrepà', 80, '🥖'); }
+  if (/^manzana$|^pera$|^naranja$|^melocoton$|^nectarina$|^paraguaya$/.test(nm)) add('1 peça mitjana', 160, '🍏');
+  if (/^platano/.test(nm)) add('1 plàtan', 120, '🍌');
+  if (/^kiwi|^mandarina$|^ciruela/.test(nm)) add('1 unitat', 75, '🥝');
+  if (/^yogur/.test(nm) && !/liquido/.test(nm)) add('1 iogurt', 125, '🥛');
+  if (/^leche,|^leche de vaca|bebida de soja|cafe, con leche|kefir|^yogur liquido|yogur, liquido/.test(nm)) add('1 got', 250, '🥛');
+  if (/^zumo|^nectar|^horchata/.test(nm)) add('1 got', 200, '🧃');
+  if (/^cerveza/.test(nm)) { add('1 canya', 200, '🍺'); add('1 llauna', 330, '🍺'); }
+  if (/^vino|^cava|^sidra/.test(nm)) add('1 copa', 150, '🍷');
+  if (/^refresco/.test(nm)) add('1 llauna', 330, '🥤');
+  if (/^atun, al natural|^atun en aceite|^atun en escabeche|^bonito.*(enlatado|aceite)|^sardina, enlatada/.test(nm)) add('1 llauna', 60, '🥫');
+  if (/jamon serrano|jamon iberico|jamon cocido|fiambre|chorizo|salchichon|fuet|lomo embuchado|mortadela/.test(nm)) add('1 llesca fina', 15, '🥓');
+  if (/^galleta|^galletas/.test(nm)) add('1 galeta', 8, '🍪');
+  if (/croissant|magdalena|donut/.test(nm)) add('1 unitat', 60, '🥐');
+  if (/^pizza/.test(nm)) add('1 porció', 120, '🍕');
+  if (/^aceite/.test(nm)) { add('1 cullerada', 10, '🥄'); add('1 culleradeta', 5, '🥄'); }
+  // mesures amb la mà
+  const leafy = /lechuga|canonigos|rucula|escarola|berro|endibia|espinaca, picada|acelga, cruda|col rizada/.test(nm);
+  const cooked = /hervid|cocid|conserva|asad|plancha|al horno|estofad|frito|al vapor/.test(nm);
+  if (c === 4 || c === 12 || /tofu|seitan/.test(nm)) H('palmell', 1, 110);
+  else if (c === 5) {
+    if (/^pan/.test(nm)) H('puny', 1, 60);
+    else if (cooked) { H('puny', 1, 160); }
+    else if (/cereales|muesli|avena|arroz hinchado|copos|gofio/.test(nm)) H('grapat', 1, 30);
+    else if (/arroz|pasta|quinoa|semola|mijo|trigo|cebada/.test(nm)) H('grapat', 1, 40);
+    else if (/galleta|bizcocho|magdalena|croissant|pastel|ensaimada|palmera|churro/.test(nm)) H('palmell', 1, 50);
+  }
+  else if (c === 9) { if (/almendra|nuez|avellana|pistacho|cacahuete|anacardo|pipa|pinon|semilla|sesamo/.test(nm)) H('grapat', 1, 25); else if (cooked) H('puny', 1, 170); else H('grapat', 1, 40); }
+  else if (c === 7) { if (/pasa|datil|desecad/.test(nm)) H('grapat', 1, 30); else if (/mermelada|confitura/.test(nm)) H('polze', 1, 15); else H('puny', 1, 150); }
+  else if (c === 18) { if (leafy) H('mans', 1, 60); else if (/^ajo|perejil|albahaca|romero|eneldo|chile/.test(nm)) H('punta', 1, 5); else H('puny', 1, 100); }
+  else if (c === 17) { if (/chips|fritas/.test(nm)) H('grapat', 1, 25); else H('puny', 1, 150); }
+  else if (c === 8) { if (/aceite|mantequilla|margarina|manteca|mayonesa|grasa|vinagreta/.test(nm)) H('polze', 1, 10); else H('palmell', 1, 90); }
+  else if (c === 10) {
+    if (/requeson|queso fresco|cuajada|mousse/.test(nm)) H('palmell', 1, 80);
+    else if (/^queso/.test(nm)) H('polze', 2, 15);
+    else if (/^nata/.test(nm)) H('polze', 1, 15);
+  }
+  else if (c === 11) H('palmell', 1, 100);
+  else if (c === 6) { if (/azucar|miel|fructosa|cacao en polvo/.test(nm)) H('punta', 1, 5); else if (/chocolate|bombon|turron/.test(nm)) H('polze', 1, 10); else H('grapat', 1, 30); }
+  else if (c === 15) { if (/sal |^sal|pimienta|oregano/.test(nm)) H('punta', 1, 1); else H('polze', 1, 15); }
+  return out.slice(0, 5);
+}
+
+/* --- plantilles de menú (aliments de la base BEDCA). mode: s = s'escala, f = fix (peça), u = unitats de N g --- */
+const T = (name, tags, items) => ({ name, tags, items });
+const TPL = {
+  esmorzar: [
+    T('Torrades amb tomàquet i pernil + cafè amb llet', ['carn', 'lact'], [['Pan integral', 60, 's'], ['Tomate', 40, 's'], ['Aceite de oliva virgen extra', 5, 's'], ['Jamón serrano', 30, 's'], ['Café, con leche', 200, 'f']]),
+    T('Iogurt amb civada, plàtan i nous', ['lact'], [['Yogur, desnatado, sabor natural', 250, 'u125'], ['Avena, cruda', 40, 's'], ['Plátano', 120, 'f'], ['Nuez', 10, 's']]),
+    T('Truita francesa amb pa i taronja', ['ou'], [['Huevo de gallina fresco', 120, 'u60'], ['Pan blanco, de barra', 50, 's'], ['Aceite de oliva virgen extra', 5, 's'], ['Naranja', 160, 'f']]),
+    T('Beguda de soja amb muesli i poma', [], [['Bebida de soja', 250, 'f'], ['Muesli', 50, 's'], ['Manzana', 160, 'f']]),
+    T('Civada amb beguda de soja, ametlles i maduixes', [], [['Avena, cruda', 50, 's'], ['Bebida de soja', 250, 'f'], ['Almendra, tostada', 15, 's'], ['Fresa', 100, 's']]),
+    T('Torrades amb formatge fresc i melmelada + llet', ['lact'], [['Pan integral', 60, 's'], ['Queso fresco de burgos', 60, 's'], ['Mermelada de fresa', 15, 's'], ['Leche, semidesnatada, pasteurizada', 200, 'f']]),
+  ],
+  snack: [
+    T('Poma i ametlles', [], [['Manzana', 160, 'f'], ['Almendra, tostada', 20, 's']]),
+    T('Iogurt amb maduixes', ['lact'], [['Yogur, desnatado, sabor natural', 125, 'u125'], ['Fresa', 150, 's']]),
+    T('Mini entrepà de gall dindi', ['carn'], [['Pan integral', 40, 's'], ['Pavo, fiambre, bajo en grasa', 40, 's']]),
+    T('Mató amb plàtan', ['lact'], [['Requesón', 100, 's'], ['Plátano', 120, 'f']]),
+    T('Pera i nous', [], [['Pera', 160, 'f'], ['Nuez', 15, 's']]),
+    T('Torrada amb alvocat i tomàquet', [], [['Pan integral', 30, 's'], ['Aguacate', 50, 's'], ['Tomate', 40, 's']]),
+  ],
+  dinar: [
+    T('Arròs amb pollastre i verdures', ['carn'], [['Arroz, hervido', 180, 's'], ['Pollo, pechuga, plancha', 130, 's'], ['Calabacín', 100, 's'], ['Pimiento rojo, crudo', 60, 's'], ['Aceite de oliva virgen extra', 10, 's'], ['Kiwi', 75, 'f']]),
+    T('Llenties estofades amb verdures', [], [['Lenteja, hervida', 250, 's'], ['Zanahoria, cruda', 60, 's'], ['Cebolla', 40, 's'], ['Aceite de oliva virgen extra', 10, 's'], ['Pan integral', 30, 's'], ['Naranja', 160, 'f']]),
+    T('Pasta integral amb tonyina i tomàquet', ['peix'], [['Pasta alimenticia, integral, hervida', 200, 's'], ['Atún, al natural', 80, 's'], ['Tomate frito', 60, 's'], ['Lechuga', 80, 's'], ['Aceite de oliva virgen extra', 5, 's'], ['Manzana', 160, 'f']]),
+    T('Salmó a la planxa amb patata i amanida', ['peix'], [['Salmón, plancha', 140, 's'], ['Patata, hervida', 200, 's'], ['Lechuga', 80, 's'], ['Tomate', 100, 's'], ['Aceite de oliva virgen extra', 10, 's'], ['Kiwi', 75, 'f']]),
+    T('Cigrons amb espinacs i ou dur', ['ou'], [['Garbanzo, en conserva', 220, 's'], ['Espinaca, hervida', 150, 's'], ['Huevo de gallina, hervido, duro', 60, 'u60'], ['Aceite de oliva virgen extra', 10, 's'], ['Pan integral', 30, 's'], ['Pera', 160, 'f']]),
+    T('Vedella amb patata i mongeta verda', ['carn'], [['Ternera, solomillo, asado', 130, 's'], ['Patata, hervida', 150, 's'], ['Judía verde, cruda', 150, 's'], ['Aceite de oliva virgen extra', 10, 's'], ['Mandarina', 75, 'f']]),
+    T('Arròs integral amb tofu i verdures', [], [['Arroz integral, hervido', 180, 's'], ['Tofu', 150, 's'], ['Pimiento rojo, crudo', 80, 's'], ['Champiñon', 80, 's'], ['Salsa de soja', 10, 's'], ['Aceite de oliva virgen extra', 8, 's'], ['Naranja', 160, 'f']]),
+  ],
+  sopar: [
+    T('Truita de carbassó amb amanida', ['ou'], [['Huevo de gallina fresco', 120, 'u60'], ['Calabacín', 150, 's'], ['Aceite de oliva virgen extra', 8, 's'], ['Lechuga', 80, 's'], ['Tomate', 100, 's'], ['Pan integral', 30, 's']]),
+    T('Lluç al forn amb patata i bròquil', ['peix', 'lact'], [['Merluza fresca', 180, 's'], ['Patata, hervida', 120, 's'], ['Brécol, hervido', 150, 's'], ['Aceite de oliva virgen extra', 10, 's'], ['Yogur, desnatado, sabor natural', 125, 'u125']]),
+    T('Crema de carbassa i pollastre a la planxa', ['carn'], [['Calabaza, hervida', 200, 's'], ['Puerro, crudo y congelado', 80, 's'], ['Patata, hervida', 80, 's'], ['Pollo, pechuga, plancha', 110, 's'], ['Aceite de oliva virgen extra', 10, 's']]),
+    T('Amanida de cigrons amb formatge fresc', ['lact'], [['Garbanzo, en conserva', 150, 's'], ['Lechuga', 80, 's'], ['Tomate', 100, 's'], ['Pepino', 80, 's'], ['Queso fresco de burgos', 60, 's'], ['Aceite de oliva virgen extra', 10, 's']]),
+    T('Gall dindi amb verdures saltejades', ['carn'], [['Pavo, pechuga, sin piel, a la plancha', 130, 's'], ['Calabacín', 120, 's'], ['Berenjena', 100, 's'], ['Cebolla', 50, 's'], ['Aceite de oliva virgen extra', 8, 's'], ['Pan integral', 30, 's']]),
+    T('Amanida de llenties amb verdures', [], [['Lenteja, en conserva', 200, 's'], ['Tomate', 100, 's'], ['Pepino', 80, 's'], ['Pimiento rojo, crudo', 60, 's'], ['Aceite de oliva virgen extra', 10, 's'], ['Pan integral', 30, 's']]),
+    T('Wok de tofu i verdures amb arròs integral', [], [['Tofu', 150, 's'], ['Calabacín', 100, 's'], ['Champiñon', 80, 's'], ['Cebolla', 50, 's'], ['Salsa de soja', 10, 's'], ['Aceite de oliva virgen extra', 8, 's'], ['Arroz integral, hervido', 100, 's']]),
+    T('Sardines amb amanida de tomàquet', ['peix'], [['Sardina', 150, 's'], ['Tomate', 150, 's'], ['Cebolla', 30, 's'], ['Aceite de oliva virgen extra', 8, 's'], ['Pan integral', 40, 's']]),
+  ],
+};
+const poolFor = mk => mk === 'mig_mati' || mk === 'berenar' ? TPL.snack : TPL[mk];
+function allowed(t) { const p = S().prefs || {}; if (p.veg && (t.tags.includes('carn') || t.tags.includes('peix'))) return false; if (p.lact && t.tags.includes('lact')) return false; if (p.peix && t.tags.includes('peix')) return false; if (p.vegan && t.tags.includes('ou')) return false; return true; }
+const isProt = i => { const r = FOODS[i]; return [4, 11, 12].includes(r[1]) || /tofu|seit|requeson|queso fresco|yogur|lenteja|garbanzo|bebida de soja/i.test(norm(r[0])); };
+function buildMeal(mk, tpl, targetKcal, targetP) {
+  // Dos factors: un per als aliments proteics i un per a la resta, perquè el menú quadri en calories I en proteïnes.
+  const base = tpl.items.map(([nm, g, mode]) => ({ i: FOOD_IDX[nm], g, mode })).filter(x => x.i != null);
+  const agg = sel => base.filter(sel).reduce((a, x) => { const nn = nut(x.i, x.g); return { k: a.k + nn.kcal, p: a.p + nn.p }; }, { k: 0, p: 0 });
+  const F = agg(x => x.mode === 'f'), Pp = agg(x => x.mode !== 'f' && isProt(x.i)), O = agg(x => x.mode !== 'f' && !isProt(x.i));
+  let fp, fo;
+  const Kt = targetKcal - F.k, Pt = (targetP || 0) - F.p, det = Pp.k * O.p - O.k * Pp.p;
+  if (targetP && Pp.p > 0 && Math.abs(det) > 1e-6) { fp = (Kt * O.p - O.k * Pt) / det; fo = (Pp.k * Pt - Kt * Pp.p) / det; }
+  if (!(fp > 0) || !(fo > 0)) { fp = fo = Kt / Math.max(Pp.k + O.k, 1); }
+  fp = clamp(fp, 0.6, 2.4); fo = clamp(fo, 0.35, 2.2);
+  const items = base.map(x => {
+    const f = isProt(x.i) ? fp : fo; let g = x.g;
+    if (x.mode === 's') g = Math.max(5, Math.round(x.g * f / 5) * 5);
+    else if (x.mode && x.mode[0] === 'u') { const u = +x.mode.slice(1); g = Math.max(1, Math.round(x.g * f / u)) * u; }
+    return [x.i, g];
+  });
+  return { meal: mk, name: tpl.name, items };
+}
+function pickTpl(list) { // tria ponderada segons l'estil de dieta
+  const d = (S().prefs || {}).dieta;
+  const w = t => d === 'flexitaria' ? (t.tags.includes('carn') ? 0.35 : 1) : d === 'portfolio' ? (/llentie|cigron|tofu|civada|ametll|nous|soja/i.test(t.name) ? 3 : t.tags.includes('carn') ? 0.4 : 1) : d === 'mind' ? (t.tags.includes('peix') || !t.tags.includes('carn') ? 1.5 : 0.6) : 1;
+  const tot = list.reduce((a, t) => a + w(t), 0); let r = Math.random() * tot;
+  for (const t of list) { r -= w(t); if (r <= 0) return t; } return list[list.length - 1];
+}
+function genPlan(kcalTarget, keep = {}, protTarget = null) {
+  protTarget = protTarget ?? foodTargets(metrics()).p;
+  const meals = MEALS.filter(M => mealShare(M.k) > 0).map(M => {
+    if (keep[M.k]) return keep[M.k];
+    const pool = poolFor(M.k).filter(allowed); const list = pool.length ? pool : poolFor(M.k);
+    const t = pickTpl(list);
+    return buildMeal(M.k, t, kcalTarget * mealShare(M.k), protTarget * mealShare(M.k));
+  });
+  return { meals, kcal: kcalTarget, created: todayStr() };
+}
+function swapMeal(plan, mk, kcalTarget) {
+  const M = MEALS.find(x => x.k === mk); const cur = plan.meals.find(x => x.meal === mk);
+  const pool = poolFor(mk).filter(allowed).filter(t => t.name !== cur.name); const list = pool.length ? pool : poolFor(mk);
+  const nm = buildMeal(mk, pickTpl(list), kcalTarget * mealShare(mk), foodTargets(metrics()).p * mealShare(mk));
+  plan.meals = plan.meals.map(x => x.meal === mk ? nm : x);
+}
+const planTotals = plan => plan.meals.reduce((a, m) => m.items.reduce((b, [i, g]) => addN(b, nut(i, g)), a), { ...ZERO });
+function planText(plan, title) {
+  const lines = [title || 'Menú', ''];
+  plan.meals.forEach(m => { const M = MEALS.find(x => x.k === m.meal); lines.push(`${M.label.toUpperCase()} — ${m.name}`); m.items.forEach(([i, g]) => lines.push(`  · ${FOODS[i][0]}: ${g} g`)); lines.push(''); });
+  const t = planTotals(plan); lines.push(`Total: ${Math.round(t.kcal)} kcal · Proteïnes ${Math.round(t.p)} g · Hidrats ${Math.round(t.h)} g · Greixos ${Math.round(t.g)} g`);
+  return lines.join('\n');
+}
+
+/* --- vistes --- */
+ui.ftab = 'diari'; ui.fdate = todayStr();
+function ring(val, target, size = 150) {
+  const r = size / 2 - 10, c = 2 * Math.PI * r, pct = target ? Math.min(val / target, 1) : 0, over = target && val > target * 1.05;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="#E8EFEA" stroke-width="12"/>
+    <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${over ? '#F59E0B' : '#10B981'}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct)}" transform="rotate(-90 ${size / 2} ${size / 2})" style="transition:stroke-dashoffset .8s"/>
+    <text x="50%" y="46%" text-anchor="middle" font-family="Outfit" font-weight="700" font-size="${size / 5.2}" fill="#0F172A">${Math.round(val)}</text>
+    <text x="50%" y="62%" text-anchor="middle" font-family="Inter" font-size="${size / 13}" fill="#64748B">de ${Math.round(target)} kcal</text></svg>`;
+}
+const mbar = (label, v, t, col, unit = 'g') => `<div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><b style="font-weight:600">${label}</b><span class="num muted">${Math.round(v)} / ${Math.round(t)} ${unit}</span></div>
+  <div style="height:8px;border-radius:999px;background:#F1F5F9;overflow:hidden"><div style="height:100%;width:${Math.min(100, t ? v / t * 100 : 0)}%;background:${v > t * 1.1 ? '#F59E0B' : col};border-radius:999px;transition:width .6s"></div></div></div>`;
+
+function foodHTML() {
+  if (!HAS_FOODS) return `<div class="empty">No s'ha pogut carregar la base d'aliments.</div>`;
+  const tabs = [['diari', '📒 Diari'], ['menu', '✨ Menú del dia'], ['dieta', '🧭 Quina dieta?'], ['dietes', '📁 Les meves dietes'], ['guia', '✋ Racions sense bàscula']];
+  const body = ui.ftab === 'menu' ? menuHTML() : ui.ftab === 'dieta' ? dietTypesHTML() : ui.ftab === 'dietes' ? dietsHTML() : ui.ftab === 'guia' ? guideHTML() : diaryHTML();
+  return `<div class="ph"><div><div class="eb">Alimentació</div><h1>${ui.ftab === 'diari' ? 'Diari d\'àpats' : ui.ftab === 'dieta' ? 'Quina dieta m\'encaixa?' : ui.ftab === 'menu' ? 'Menú del dia' : ui.ftab === 'dietes' ? 'Les meves dietes' : 'Racions sense bàscula'}</h1>
+    <p>${ui.ftab === 'dieta' ? 'Tipus de dieta amb evidència científica i una recomanació pas a pas. Sempre orientatiu: consulta un/a especialista.' : ui.ftab === 'diari' ? 'Registra el que menges amb la base BEDCA (955 aliments). Pots posar grams o fer servir la mà com a mesura.' : ui.ftab === 'menu' ? 'Un menú d\'exemple ajustat a les teves calories i proteïnes. Canvia l\'àpat que no t\'agradi.' : ui.ftab === 'dietes' ? 'Menús que has desat per repetir-los o compartir-los.' : 'Sense bàscula? La teva mà és proporcional al teu cos i sempre la portes a sobre.'}</p></div></div>
+    <div class="tabs">${tabs.map(([k, l]) => `<button data-act="ftab" data-t="${k}" class="${ui.ftab === k ? 'on' : ''}">${l}</button>`).join('')}</div>${body}`;
+}
+function diaryHTML() {
+  const m = metrics(), T = foodTargets(m), d = ui.fdate, t = dayTotals(d), items = dayItems(d);
+  const isToday = d === todayStr();
+  const yest = addDays(d, -1);
+  const sal = t.na * 2.5 / 1000;
+  const meals = MEALS.map((M, mi) => {
+    const rows = items.filter(it => it[0] === mi);
+    const k = rows.reduce((a, it) => a + nut(it[1], it[2]).kcal, 0);
+    const yRows = dayItems(yest).filter(it => it[0] === mi);
+    return `<div class="panel" style="padding:16px 18px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px">${M.em}</span><div style="flex:1"><b class="h" style="font-size:16px">${M.label}</b><div class="small muted num">${Math.round(k)} kcal · objectiu ≈ ${Math.round(T.kcal * mealShare(M.k))}</div></div>
+        ${!rows.length && yRows.length ? `<button class="btn sm ghost" data-act="copy-meal" data-m="${mi}">↺ Com ahir</button>` : ''}
+        <button class="btn sm" data-act="add-food" data-m="${mi}">＋ Afegir</button></div>
+      ${rows.length ? `<div style="margin-top:8px">${rows.map(it => { const nn = nut(it[1], it[2]); return `<div class="srow" style="padding:8px 0"><div style="flex:1;min-width:0"><div style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(FOODS[it[1]][0])}</div><div class="small faint num">${it[2]} g · P ${nf(nn.p, 1)} · H ${nf(nn.h, 1)} · G ${nf(nn.g, 1)}</div></div><b class="num small">${Math.round(nn.kcal)} kcal</b><button class="icon-btn" data-act="del-food" data-id="${it[3]}">🗑</button></div>`; }).join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+  return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn sm ghost" data-act="fday" data-d="-1">‹</button><b class="h" style="font-size:17px;min-width:150px;text-align:center">${isToday ? 'Avui' : fmtDate(d)}</b><button class="btn sm ghost" data-act="fday" data-d="1" ${isToday ? 'disabled' : ''}>›</button>
+      ${!isToday ? `<button class="link" data-act="fday" data-d="0">Tornar a avui</button>` : ''}</div>
+    <div class="panel" style="display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center" id="fsum">
+      <div style="text-align:center">${ring(t.kcal, T.kcal)}<div class="small muted">${t.kcal <= T.kcal ? `Et queden <b class="num">${Math.round(T.kcal - t.kcal)}</b> kcal` : `<span class="delta-up">+${Math.round(t.kcal - T.kcal)} kcal</span> per sobre`}</div></div>
+      <div style="display:grid;gap:12px">${mbar('Proteïnes', t.p, T.p, '#3B82F6')}${mbar('Hidrats', t.h, T.h, '#F59E0B')}${mbar('Greixos', t.g, T.g, '#EF4444')}${mbar('Fibra', t.fib, T.fib, '#10B981')}
+        <div class="small muted">Sal estimada <b class="num">${nf(sal, 1)} g</b> de ${nf(T.sal, 1)} g ${(S().prefs || {}).dieta === 'dash' ? '(DASH: sodi < 2.300 mg)' : 'recomanats'} · greix saturat <b class="num">${nf(t.sat, 1)} g</b></div></div>
+    </div>
+    <div class="grid" style="margin-top:16px">${meals}</div>
+    <div class="panel" style="margin-top:16px"><h3 style="font-size:17px;margin-bottom:10px">Últims 14 dies</h3><div class="chart-box sm"><canvas id="cf"></canvas></div></div>`;
+}
+function menuHTML() {
+  const m = metrics(), T = foodTargets(m);
+  if (!S().plan || Math.abs((S().plan.kcal || 0) - T.kcal) > 50) { S().plan = genPlan(T.kcal); Store.save(); }
+  const plan = S().plan, tot = planTotals(plan), p = S().prefs || {};
+  return `<div class="panel" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+      <div class="chips">${[['veg', '🥦 Vegetarià'], ['lact', '🥛 Sense lactis'], ['peix', '🐟 Sense peix']].map(([k, l]) => `<button class="chipx ${p[k] ? 'on' : ''}" data-act="pref" data-k="${k}">${l}</button>`).join('')}</div>
+      <button class="btn" data-act="regen">🔄 Generar un altre menú</button></div>
+    <div class="small muted" style="margin-top:10px">Estil: <b>${DIETS[(S().prefs || {}).dieta || 'mediterrania'].em} ${DIETS[(S().prefs || {}).dieta || 'mediterrania'].name}</b> · <button class="link" data-act="ftab" data-t="dieta">Canviar</button></div>
+    <div class="grid g4" style="margin-top:16px">${[['Calories', tot.kcal, T.kcal, 'kcal'], ['Proteïnes', tot.p, T.p, 'g'], ['Hidrats', tot.h, T.h, 'g'], ['Greixos', tot.g, T.g, 'g']].map(([l, v, tg, u]) => `<div class="ins"><div class="l">${l}</div><div class="v num">${Math.round(v)} <small class="muted" style="font-size:13px">${u}</small></div><div class="s">objectiu ${Math.round(tg)} ${u}</div></div>`).join('')}</div>
+    <div class="grid g2" style="margin-top:16px">${plan.meals.map(pm => { const M = MEALS.find(x => x.k === pm.meal); const k = pm.items.reduce((a, [i, g]) => a + nut(i, g).kcal, 0); return `<div class="panel">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px">${M.em}</span><div style="flex:1"><div class="small muted">${M.label} · <span class="num">${Math.round(k)} kcal</span></div><b class="h" style="font-size:16px">${esc(pm.name)}</b></div><button class="btn sm ghost" data-act="swap" data-m="${pm.meal}" title="Canviar aquest àpat">🔄</button></div>
+      <div style="margin-top:10px">${pm.items.map(([i, g]) => { const hp = portions(i).find(x => /🖐️|✊|🤲|👍|☝️|🙌/.test(x.em)); const un = portions(i).find(x => !/🖐️|✊|🤲|👍|☝️|🙌/.test(x.em)); const hint = un ? `≈ ${n(g / un.g, 1)} × ${un.label.replace(/^1 /, '')}` : hp ? `≈ ${n(g / hp.g * (hp.label.match(/^\d+/) ? +hp.label.match(/^\d+/)[0] : 1), 1)} ${hp.em}` : ''; return `<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid #F1F5F9;font-size:13px"><span>${esc(FOODS[i][0])}</span><span class="num" style="white-space:nowrap"><b>${g} g</b> <span class="faint">${hint}</span></span></div>`; }).join('')}</div>
+      <button class="link" style="margin-top:10px" data-act="plan-meal-to-diary" data-m="${pm.meal}">＋ Afegir al diari d'avui</button></div>`; }).join('')}</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="btn" data-act="plan-to-diary">Afegir tot el menú al diari d'avui</button><button class="btn ghost" data-act="save-plan">💾 Desar com a dieta</button><button class="btn ghost" data-act="copy-plan">Copiar el text</button></div>
+    <p class="small faint" style="margin-top:14px">Menú orientatiu generat automàticament a partir de plantilles i la base BEDCA. ${DISCLAIMER}</p>`;
+}
+function dietsHTML() {
+  const ds = (S().diets || []).slice().reverse();
+  if (!ds.length) return `<div class="empty"><div style="font-size:32px">📁</div><h3 style="margin:8px 0">Encara no has desat cap dieta</h3><p>Genera un menú i prem "Desar com a dieta".</p><button class="btn" data-act="ftab" data-t="menu">Anar al menú del dia</button></div>`;
+  return `<div class="grid">${ds.map(dt => { const t = planTotals(dt.plan); return `<details class="panel"><summary style="display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none"><span style="font-size:22px">📄</span><div style="flex:1"><b class="h" style="font-size:16px">${esc(dt.title)}</b><div class="small muted">${fmtDate(dt.date)} · <span class="num">${Math.round(t.kcal)} kcal · ${Math.round(t.p)} g proteïna</span></div></div><span class="faint">▾</span></summary>
+    <div style="margin-top:12px">${dt.plan.meals.map(pm => `<div style="margin-top:10px"><div class="small" style="font-weight:700;color:#047857">${MEALS.find(x => x.k === pm.meal).label} · ${esc(pm.name)}</div><div class="small muted">${pm.items.map(([i, g]) => `${esc(FOODS[i][0])} (${g} g)`).join(' · ')}</div></div>`).join('')}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn sm" data-act="diet-to-diary" data-id="${dt.id}">Aplicar al diari d'avui</button><button class="btn sm ghost" data-act="diet-copy" data-id="${dt.id}">Copiar text</button><button class="btn sm danger" data-act="diet-del" data-id="${dt.id}">Esborrar</button></div></details>`; }).join('')}</div>`;
+}
+function guideHTML() {
+  const m = metrics(), T = foodTargets(m);
+  // el teu plat per a dinar i sopar (≈ 30 % de l'objectiu diari cadascun)
+  const share = 0.3, half = v => Math.max(0.5, Math.round(v * 2) / 2);
+  const palms = half(T.p * share / 25), fists = half(T.h * share / 45), thumbs = half(T.g * share * 0.6 / 10);
+  const fmtN = v => v.toLocaleString('ca-ES');
+  const plate = [['🖐️', `${fmtN(palms)} palmell${palms > 1 ? 's' : ''}`, 'de proteïna', 'carn, peix, ous, tofu o llegums'], ['✊', `${fmtN(fists)} puny${fists > 1 ? 's' : ''}`, "d'hidrats", 'arròs, pasta, patata, pa o llegums'], ['✊✊', '2 punys', 'de verdura', 'com més colors, millor'], ['👍', `${fmtN(thumbs)} polze${thumbs > 1 ? 's' : ''}`, 'de greix', "oli d'oliva, fruits secs o alvocat"]];
+  const table = [
+    ['Carn o peix', '🖐️ 1 palmell', '≈ 100–120 g', '≈ 25 g de proteïna'], ['Ous', '🥚 2 ous', '≈ 120 g', '≈ 15 g de proteïna'], ['Formatge fresc / mató', '🖐️ 1 palmell', '≈ 80 g', ''], ['Formatge curat', '👍👍 2 polzes', '≈ 30 g', ''],
+    ['Arròs o pasta cuits', '✊ 1 puny', '≈ 150–170 g', '≈ 45 g d\'hidrats'], ['Arròs o pasta en cru', '🤲 2 grapats', '≈ 70–80 g', '1 plat un cop cuit'], ['Llegums cuits', '✊ 1 puny', '≈ 170 g', ''], ['Pa', '✊ 1 puny / 2 llesques', '≈ 60 g', ''],
+    ['Patata', '✊ 1 puny', '≈ 150 g', '1 patata mitjana'], ['Verdura', '✊ 1 puny', '≈ 100 g', ''], ['Enciam i fulles', '🙌 2 mans', '≈ 60 g', ''], ['Fruita', '✊ 1 puny', '≈ 150 g', '1 peça mitjana'],
+    ['Fruits secs', '🤲 1 grapat', '≈ 25 g', 'sense closca'], ['Cereals d\'esmorzar / civada', '🤲 1 grapat', '≈ 30 g', ''], ['Oli o mantega', '👍 1 polze', '≈ 10 g', '1 cullerada'], ['Sucre o mel', '☝️ 1 punta de dit', '≈ 5 g', '1 culleradeta'],
+  ];
+  return `<div class="grid g3">${Object.values(HANDS).map(h => `<div class="panel" style="display:flex;gap:14px"><div style="font-size:40px;line-height:1">${h.em}</div><div><b class="h" style="font-size:17px">${h.label}</b><p class="small muted" style="margin:4px 0">${h.desc}</p><div class="small" style="color:var(--brand)">${h.ex}</div></div></div>`).join('')}</div>
+    <div class="panel" style="margin-top:16px;background:var(--mint-50);border-color:var(--mint-100)"><p class="sec-label">El teu plat (dinar i sopar)</p><p class="small muted" style="margin:-4px 0 14px">Calculat per a ${n(T.kcal, 0)} kcal i ${n(T.p, 0)} g de proteïna al dia.</p>
+      <div class="grid g4">${plate.map(([e, a, b, c]) => `<div style="background:#fff;border-radius:14px;padding:14px;text-align:center"><div style="font-size:32px">${e}</div><div class="h" style="font-size:18px;font-weight:700;margin-top:6px">${a}</div><div class="small" style="font-weight:600">${b}</div><div class="small muted" style="margin-top:4px">${c}</div></div>`).join('')}</div></div>
+    <div class="panel" style="margin-top:16px"><h3 style="font-size:17px;margin-bottom:8px">Equivalències</h3><div class="tscroll"><table><thead><tr><th>Aliment</th><th>Mesura</th><th>Grams aprox.</th><th></th></tr></thead><tbody>${table.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="num">${r[2]}</td><td class="muted">${r[3]}</td></tr>`).join('')}</tbody></table></div>
+    <p class="small faint" style="margin:12px 0 0">Les mesures amb la mà són aproximades (±20 %), però són proporcionals a la mida de cada persona. Quan registres un aliment al diari, l'app et proposa aquestes mesures automàticament.</p></div>`;
+}
+function drawFoodChart() {
+  const el = $('#cf'); if (!el || !window.Chart) return;
+  const T = foodTargets(metrics()); const days = [...Array(14)].map((_, k) => addDays(todayStr(), k - 13));
+  charts.f = new Chart(el, { type: 'bar', data: { labels: days.map(fmtShort), datasets: [
+    { type: 'bar', label: 'Consum', data: days.map(d => Math.round(dayTotals(d).kcal)), backgroundColor: days.map(d => dayTotals(d).kcal > T.kcal * 1.1 ? '#FCD34D' : '#6EE7B7'), borderRadius: 6 },
+    { type: 'line', label: 'Objectiu', data: days.map(() => Math.round(T.kcal)), borderColor: '#0F4C3A', borderDash: [6, 4], pointRadius: 0, borderWidth: 2 }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#94A3B8' } }, y: { grid: { color: '#EEF2EE' }, ticks: { color: '#94A3B8', font: { size: 11 } } } } } });
+}
+
+/* --- afegir aliment (full en 2 passos) --- */
+const AF = { open: false, step: 'search', meal: 0, q: '', cat: -1, food: null, g: 100 };
+function openAddFood(mi) { Object.assign(AF, { open: true, step: 'search', meal: mi, q: '', cat: -1, food: null, g: 100 }); renderAddFood(); }
+function closeAddFood() { AF.open = false; const el = $('#af-ov'); if (el) el.remove(); }
+function recentFoods() { const seen = new Set(), out = []; Object.keys(S().food).sort().reverse().forEach(d => S().food[d].slice().reverse().forEach(it => { if (!seen.has(it[1])) { seen.add(it[1]); out.push(it[1]); } })); return out.slice(0, 10); }
+function afResults() {
+  const res = AF.q.trim() || AF.cat >= 0 ? searchFoods(AF.q, AF.cat) : [];
+  if (!AF.q.trim() && AF.cat < 0) {
+    const fav = (S().favs || []), rec = recentFoods().filter(i => !fav.includes(i));
+    return `${fav.length ? `<div class="cat">⭐ Preferits</div>${fav.map(afRow).join('')}` : ''}${rec.length ? `<div class="cat">🕘 Recents</div>${rec.map(afRow).join('')}` : ''}${!fav.length && !rec.length ? '<p class="small muted" style="padding:10px 0">Escriu el nom d\'un aliment (en català o castellà) o tria una categoria.</p>' : ''}`;
+  }
+  return res.length ? res.map(afRow).join('') : '<p class="small muted" style="padding:10px 0">Cap resultat. Prova amb una altra paraula (p. ex. "pollastre" o "pollo").</p>';
+}
+const afRow = i => { const r = FOODS[i]; return `<button class="srow" style="width:100%;text-align:left" data-act="af-pick" data-i="${i}"><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500">${esc(r[0])}${r[9] ? ' <span class="faint small" title="Valor corregit">*</span>' : ''}</div><div class="small faint">${FOOD_CATS[r[1]]}</div></div><span class="small muted num" style="white-space:nowrap">${r[2]} kcal · P${r[3]} H${r[4]} G${r[5]}</span></button>`; };
+function renderAddFood() {
+  let ov = $('#af-ov');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'af-ov'; ov.className = 'ov'; document.body.appendChild(ov); ov.addEventListener('click', e => { if (e.target === ov) closeAddFood(); }); }
+  const M = MEALS[AF.meal];
+  if (AF.step === 'search') {
+    ov.innerHTML = `<div class="modal" style="max-width:620px"><div class="mh"><div style="flex:1"><div class="small muted">${M.em} ${M.label} · ${ui.fdate === todayStr() ? 'avui' : fmtDate(ui.fdate)}</div></div><button class="wz-close" data-act="af-close">✕</button></div>
+      <div class="mb"><h2 class="wz-q" style="margin-top:6px">Què has menjat?</h2>
+        <input class="search" id="afq" placeholder="Cerca: pollastre, arròs, poma, iogurt…" value="${esc(AF.q)}" autocomplete="off">
+        <div class="chips" style="margin-top:10px">${FOOD_CATS.map((c, k) => [c, k]).filter(([c]) => !/Altres|Plats preparats|Productes dietètics|alcohòliques/.test(c)).map(([c, k]) => `<button class="chipx ${AF.cat === k ? 'on' : ''}" style="padding:6px 11px;font-size:12px" data-act="af-cat" data-k="${k}">${c}</button>`).join('')}</div>
+        <div id="afres" style="max-height:46vh;overflow-y:auto;margin-top:8px">${afResults()}</div></div><div style="height:14px"></div></div>`;
+    const q = $('#afq'); if (q && window.matchMedia('(min-width: 700px)').matches) q.focus();
+    return;
+  }
+  const i = AF.food, r = FOODS[i], nn = nut(i, +AF.g || 0), ps = portions(i), fav = (S().favs || []).includes(i);
+  const hand = ps.filter(p => /🖐️|✊|🤲|👍|☝️|🙌/.test(p.em)), units = ps.filter(p => !hand.includes(p));
+  ov.innerHTML = `<div class="modal" style="max-width:560px"><div class="mh"><button class="wz-close" data-act="af-back" title="Enrere">←</button><div style="flex:1"></div><button class="wz-close" data-act="af-fav" title="Preferit">${fav ? '⭐' : '☆'}</button><button class="wz-close" data-act="af-close">✕</button></div>
+    <div class="mb"><h2 class="wz-q" style="margin-top:8px;font-size:22px">${esc(r[0])}</h2><p class="small muted" style="margin:0 0 16px">Per 100 g: ${r[2]} kcal · P ${r[3]} g · H ${r[4]} g · G ${r[5]} g · fibra ${r[6]} g${r[9] ? ' · <span title="El valor original de BEDCA era incoherent">valor corregit*</span>' : ''}</p>
+      <div class="bignum"><button class="pm" data-act="af-inc" data-s="-10">−</button><div class="field"><input id="afg" type="number" inputmode="numeric" min="1" max="2000" value="${AF.g}"><span class="u">g</span></div><button class="pm" data-act="af-inc" data-s="10">+</button></div>
+      ${units.length ? `<div class="quick">${units.map(p => `<button data-act="af-g" data-g="${p.g}" class="${+AF.g === p.g ? 'on' : ''}">${p.em} ${p.label} · ${p.g} g</button>`).join('')}</div>` : ''}
+      ${hand.length ? `<div class="sub-q" style="margin:16px 0 8px;font-size:14px">Sense bàscula? Fes servir la mà</div><div class="quick" style="margin-top:0">${hand.map(p => { const base = p.g / (+(p.label.match(/^\d+/) || [1])[0]); return [1, 2, 3].map(k => `<button data-act="af-g" data-g="${Math.round(base * k)}" class="${+AF.g === Math.round(base * k) ? 'on' : ''}">${p.em.repeat(Math.min(k, 3))} ${k} ${HANDS[Object.keys(HANDS).find(h => HANDS[h].em === p.em)].label.toLowerCase()}${k > 1 ? 's' : ''} · ${Math.round(base * k)} g</button>`).join(''); }).join('')}</div>` : ''}
+      <div class="quick">${[50, 100, 150, 200].map(g => `<button data-act="af-g" data-g="${g}" class="${+AF.g === g ? 'on' : ''}">${g} g</button>`).join('')}</div>
+      <div id="afprev" class="feedback fb-info" style="display:flex;justify-content:space-around;text-align:center">${afPrev(nn)}</div>
+      <div class="sub-q" style="margin:16px 0 8px;font-size:14px">Àpat</div><div class="chips">${MEALS.map((Mx, k) => `<button class="chipx ${AF.meal === k ? 'on' : ''}" data-act="af-meal" data-k="${k}">${Mx.em} ${Mx.label}</button>`).join('')}</div>
+    </div><div class="mf"><span></span><button class="btn" id="afadd" data-act="af-add">Afegir ✓</button></div></div>`;
+}
+const afPrev = nn => `<div><b class="h num" style="font-size:22px">${Math.round(nn.kcal)}</b><div class="small">kcal</div></div><div><b class="h num" style="font-size:22px">${nf(nn.p, 1)}</b><div class="small">proteïna</div></div><div><b class="h num" style="font-size:22px">${nf(nn.h, 1)}</b><div class="small">hidrats</div></div><div><b class="h num" style="font-size:22px">${nf(nn.g, 1)}</b><div class="small">greixos</div></div>`;
+function addItems(date, list) { // list: [[mealIdx, foodIdx, g]]
+  S().food[date] = (S().food[date] || []).concat(list.map(([m, i, g]) => [m, i, Math.round(g), uid()]));
+}
+function pruneFood() { // guarda com a màxim 400 dies de diari
+  const ks = Object.keys(S().food).sort(); while (ks.length > 400) delete S().food[ks.shift()];
+}
+
+/* --- esdeveniments del mòdul --- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const a = b.dataset.act;
+  const T = () => foodTargets(metrics());
+  switch (a) {
+    case 'ftab': ui.ftab = b.dataset.t; if (route !== 'alimentacio') location.hash = '#alimentacio'; else render(); break;
+    case 'fday': { const k = +b.dataset.d; ui.fdate = k === 0 ? todayStr() : addDays(ui.fdate, k); if (ui.fdate > todayStr()) ui.fdate = todayStr(); render(); break; }
+    case 'add-food': openAddFood(+b.dataset.m); break;
+    case 'copy-meal': { const mi = +b.dataset.m; addItems(ui.fdate, dayItems(addDays(ui.fdate, -1)).filter(it => it[0] === mi).map(it => [mi, it[1], it[2]])); Store.save(); render(); toast(`${MEALS[mi].label} copiat d'ahir`); break; }
+    case 'del-food': { const d = ui.fdate; const arr = S().food[d] || []; const k = arr.findIndex(x => x[3] === b.dataset.id); const [rem] = arr.splice(k, 1); Store.save(); render(); toast('Aliment esborrat', { label: 'Desfer', fn: () => { (S().food[d] = S().food[d] || []).push(rem); Store.save(); render(); } }); break; }
+    case 'af-close': closeAddFood(); break;
+    case 'af-cat': AF.cat = AF.cat === +b.dataset.k ? -1 : +b.dataset.k; renderAddFood(); break;
+    case 'af-pick': { AF.food = +b.dataset.i; const ps = portions(AF.food); const last = recentGrams(AF.food); AF.g = last || (ps[0] ? ps[0].g : 100); AF.step = 'qty'; renderAddFood(); break; }
+    case 'af-back': AF.step = 'search'; renderAddFood(); break;
+    case 'af-fav': { const f = S().favs || (S().favs = []); const k = f.indexOf(AF.food); if (k >= 0) f.splice(k, 1); else f.unshift(AF.food); Store.save(); renderAddFood(); break; }
+    case 'af-g': AF.g = +b.dataset.g; renderAddFood(); break;
+    case 'af-inc': AF.g = clamp((+AF.g || 0) + +b.dataset.s, 1, 2000); $('#afg').value = AF.g; afUpdate(); break;
+    case 'af-meal': AF.meal = +b.dataset.k; renderAddFood(); break;
+    case 'af-add': { if (!(+AF.g > 0)) return; addItems(ui.fdate, [[AF.meal, AF.food, +AF.g]]); pruneFood(); Store.save(); const k = Math.round(nut(AF.food, +AF.g).kcal); closeAddFood(); render(); toast(`${FOODS[AF.food][0]} · ${k} kcal afegides`); break; }
+    case 'pref': { const p = S().prefs || (S().prefs = {}); p[b.dataset.k] = !p[b.dataset.k]; S().plan = genPlan(T().kcal); Store.save(); render(); break; }
+    case 'regen': S().plan = genPlan(T().kcal); Store.save(); render(); break;
+    case 'swap': swapMeal(S().plan, b.dataset.m, T().kcal); Store.save(); render(); break;
+    case 'plan-meal-to-diary': { const pm = S().plan.meals.find(x => x.meal === b.dataset.m); const mi = MEALS.findIndex(x => x.k === pm.meal); addItems(todayStr(), pm.items.map(([i, g]) => [mi, i, g])); Store.save(); toast(`${MEALS[mi].label} afegit al diari d'avui`, { label: 'Veure', fn: () => { ui.ftab = 'diari'; ui.fdate = todayStr(); render(); } }); break; }
+    case 'plan-to-diary': { S().plan.meals.forEach(pm => { const mi = MEALS.findIndex(x => x.k === pm.meal); addItems(todayStr(), pm.items.map(([i, g]) => [mi, i, g])); }); Store.save(); ui.ftab = 'diari'; ui.fdate = todayStr(); render(); toast('Menú afegit al diari d\'avui ✓'); break; }
+    case 'save-plan': { (S().diets || (S().diets = [])).push({ id: uid(), date: todayStr(), title: `Menú de ${n(T().kcal, 0)} kcal · ${fmtShort(todayStr())}`, plan: clone(S().plan) }); Store.save(); toast('Dieta desada', { label: 'Veure', fn: () => { ui.ftab = 'dietes'; render(); } }); break; }
+    case 'copy-plan': navigator.clipboard.writeText(planText(S().plan, 'Menú del dia')).then(() => toast('Menú copiat'), () => toast('No s\'ha pogut copiar')); break;
+    case 'diet-to-diary': { const dt = S().diets.find(x => x.id === b.dataset.id); dt.plan.meals.forEach(pm => { const mi = MEALS.findIndex(x => x.k === pm.meal); addItems(todayStr(), pm.items.map(([i, g]) => [mi, i, g])); }); Store.save(); ui.ftab = 'diari'; ui.fdate = todayStr(); render(); toast('Dieta aplicada al diari d\'avui ✓'); break; }
+    case 'diet-copy': { const dt = S().diets.find(x => x.id === b.dataset.id); navigator.clipboard.writeText(planText(dt.plan, dt.title)).then(() => toast('Dieta copiada'), () => toast('No s\'ha pogut copiar')); break; }
+    case 'diet-del': { const k = S().diets.findIndex(x => x.id === b.dataset.id); const [rem] = S().diets.splice(k, 1); Store.save(); render(); toast('Dieta esborrada', { label: 'Desfer', fn: () => { S().diets.splice(k, 0, rem); Store.save(); render(); } }); break; }
+  }
+});
+function recentGrams(i) { const ks = Object.keys(S().food).sort().reverse(); for (const d of ks) { const it = S().food[d].slice().reverse().find(x => x[1] === i); if (it) return it[2]; } return null; }
+function afUpdate() { const p = $('#afprev'); if (p) p.innerHTML = afPrev(nut(AF.food, +AF.g || 0)); const b = $('#afadd'); if (b) b.disabled = !(+AF.g > 0); document.querySelectorAll('#af-ov .quick button').forEach(x => x.classList.toggle('on', +x.dataset.g === +AF.g)); }
+document.addEventListener('input', e => {
+  if (e.target.id === 'afq') { AF.q = e.target.value; $('#afres').innerHTML = afResults(); }
+  if (e.target.id === 'afg') { AF.g = e.target.value === '' ? '' : +e.target.value; afUpdate(); }
+});
+document.addEventListener('keydown', e => {
+  if (!AF.open) return;
+  if (e.key === 'Escape') { closeAddFood(); e.stopImmediatePropagation(); }
+  if (e.key === 'Enter') { if (AF.step === 'qty') { e.preventDefault(); $('#afadd')?.click(); } else { const first = $('#afres [data-act=af-pick]'); if (first) { e.preventDefault(); first.click(); } } }
+}, true);
+
+/* =========================================================
+   QUINA DIETA? — catàleg basat en evidència + recomanador pas a pas
+   Sempre orientatiu: no substitueix un/a dietista-nutricionista.
+   ========================================================= */
+const DISCLAIMER = 'Només és una recomanació orientativa generada automàticament. Abans de canviar la teva alimentació, consulta un/a dietista-nutricionista o el teu metge/essa, sobretot si tens alguna malaltia, prens medicació, estàs embarassada o tens menys de 18 anys.';
+const SRC = {
+  predimed: ['PREDIMED (Hospital Clínic): −30 % d\'esdeveniments cardiovasculars', 'https://www.clinicbarcelona.org/en/news/the-mediterranean-diet-reduces-by-30-the-heart-attack-and-stroke-risk'],
+  aspcat: ['ASPCAT · Petits canvis per menjar millor', 'https://canalsalut.gencat.cat/ca/vida-saludable/alimentacio/petits-canvis-menjar-millor/'],
+  aesan: ['AESAN 2022 · Recomanacions dietètiques sostenibles', 'https://www.aesan.gob.es/AECOSAN/web/noticias_y_actualizaciones/noticias/2022/recomendaciones_dieteticas.htm'],
+  usnews: ['U.S. News Best Diets 2025 (resum)', 'https://www.nutritioninsight.com/news/us-news-reports-2025-best-diet-expands-evaluations-mediterranean-diet-comes-out-on-top-again.html'],
+  dashH: ['Harvard Nutrition Source · DASH', 'https://nutritionsource.hsph.harvard.edu/healthy-weight/diet-reviews/dash-diet'],
+  dashM: ['MedlinePlus · Dieta DASH', 'https://medlineplus.gov/ency/patientinstructions/000770.htm'],
+  and: ['Academy of Nutrition and Dietetics · Dietes vegetarianes', 'https://pubmed.ncbi.nlm.nih.gov/27886704/'],
+  b12: ['Vitamina B12 en dietes vegetals (revisió)', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10030528/'],
+  harvard: ['Harvard Nutrition Source · Diet Reviews', 'https://nutritionsource.hsph.harvard.edu/healthy-weight/diet-reviews'],
+  portfolio: ['JAMA 2011 · Dieta Portfolio i colesterol LDL', 'https://www.eurekalert.org/news-releases/869695'],
+  issn: ['ISSN · Proteïna i exercici (2017)', 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5477153/'],
+  bmjIF: ['BMJ 2025 · Dejuni intermitent vs restricció calòrica (99 assaigs)', 'https://bmjgroup.com/intermittent-fasting-comparable-to-traditional-diets-for-weight-loss/'],
+  keto: ['Harvard Nutrition Source · Dieta cetogènica', 'https://nutritionsource.hsph.harvard.edu/?p=14310'],
+  ketoS: ['Harvard SITN · Keto: probablement no és per a tu', 'https://sites.harvard.edu/sitn/2023/05/10/keto-its-probably-not-right-for-you'],
+  aap: ['AAP · Prevenir obesitat i TCA en adolescents', 'https://med.stanford.edu/news/all-news/2016/08/new-guidelines-offer-one-approach-to-prevent-teen-obesity-eating-disorders.html'],
+};
+const DIETS = {
+  mediterrania: { em: '🫒', name: 'Dieta mediterrània', ev: 'Alta', minor: true,
+    what: 'Patró basat en verdures, fruita, llegums, cereals integrals, fruita seca i oli d\'oliva verge extra; peix i aus amb moderació i poca carn vermella i processada.',
+    who: 'Per a gairebé tothom. És la base de les recomanacions de l\'ASPCAT i de l\'AESAN.',
+    pros: ['És la més estudiada: a l\'estudi PREDIMED va reduir prop d\'un 30 % infarts i ictus en persones d\'alt risc', 'Flexible, sostenible i fàcil de seguir a Catalunya'],
+    cons: ['Les quantitats compten: oli i fruita seca són molt calòrics'],
+    app: 'Menú equilibrat amb oli d\'oliva, llegums 4+ cops per setmana i peix.', src: ['predimed', 'aspcat', 'aesan'] },
+  dash: { em: '🫀', name: 'DASH (cor i tensió)', ev: 'Alta', minor: true,
+    what: 'Pensada per baixar la tensió arterial: molta fruita i verdura, làctics desnatats, cereals integrals, llegums i fruita seca, i poca sal, sucre i carn vermella.',
+    who: 'Persones amb tensió alta o risc cardiovascular, i qualsevol que vulgui menjar més sa.',
+    pros: ['Baixa la tensió fins i tot sense reduir la sal; encara més limitant el sodi a 2.300 mg/dia (o 1.500 mg)', 'Puntuació més alta per a la salut del cor a U.S. News'],
+    cons: ['Cal planificar racions i llegir etiquetes per controlar la sal', 'Si prens medicació per a la tensió, no la deixis: parla-ho amb el metge'],
+    app: 'L\'objectiu de sodi del diari baixa a 2.300 mg/dia (≈ 5,8 g de sal).', src: ['dashH', 'dashM'] },
+  flexitaria: { em: '🥦', name: 'Flexitariana', ev: 'Moderada-alta', minor: true,
+    what: 'Majoritàriament vegetal, però amb carn o peix de manera ocasional.',
+    who: 'Qui vol menjar menys carn sense renunciar-hi del tot o reduir l\'impacte ambiental.',
+    pros: ['De les més ben valorades i fàcils de seguir', 'Encaixa amb la recomanació de l\'AESAN de prioritzar aliments vegetals'],
+    cons: ['Cal assegurar proteïna suficient amb llegums, ous, làctics o tofu'],
+    app: 'El menú prioritza plats sense carn (≈ 7 de cada 10).', src: ['usnews', 'aesan'] },
+  vegetariana: { em: '🌱', name: 'Vegetariana / vegana', ev: 'Alta (si està ben planificada)', minor: true,
+    what: 'Sense carn ni peix (vegetariana) o sense cap producte animal (vegana).',
+    who: 'Per motius ètics, ambientals o de salut. Apta en totes les etapes de la vida si està ben planificada.',
+    pros: ['Associada a menys risc cardiovascular, diabetis tipus 2 i obesitat', 'Menys impacte ambiental'],
+    cons: ['La vitamina B12 s\'ha de prendre en suplement (imprescindible en vegans)', 'Vigilar ferro, calci, iode, omega-3 i proteïna'],
+    app: 'El menú exclou carn i peix (i ous i làctics en mode vegà).', src: ['and', 'b12'] },
+  mind: { em: '🧠', name: 'MIND (salut cerebral)', ev: 'Moderada', minor: false,
+    what: 'Barreja de mediterrània i DASH que destaca verdures de fulla, fruits vermells, fruita seca, llegums, peix i oli d\'oliva.',
+    who: 'Adults, sobretot a partir dels 50-60 anys, interessats en la salut cognitiva.',
+    pros: ['Combina dos patrons amb molta evidència'],
+    cons: ['L\'efecte sobre la demència encara s\'està investigant'],
+    app: 'El menú prioritza peix, fruita seca i plats vegetals.', src: ['harvard'] },
+  portfolio: { em: '🧪', name: 'Portfolio (colesterol)', ev: 'Alta per al colesterol LDL', minor: false,
+    what: 'Patró vegetal que combina 4 grups que baixen el colesterol: fruita seca, proteïna de soja, fibra viscosa (civada, ordi, llegums) i esterols vegetals.',
+    who: 'Persones amb el colesterol LDL alt, sempre amb seguiment mèdic.',
+    pros: ['En un assaig de 6 mesos va baixar el colesterol LDL un 13 % (davant del 3 % de la dieta control)'],
+    cons: ['Cal constància amb soja i esterols; no substitueix la medicació si te l\'han receptat'],
+    app: 'El menú prioritza civada, llegums, tofu i fruita seca.', src: ['portfolio'] },
+  proteica: { em: '🏋️', name: 'Alta en proteïna (esport)', ev: 'Moderada-alta', minor: false,
+    what: 'Una alimentació equilibrada amb més proteïna: 1,4–2,0 g per kg de pes al dia, repartida en 3-5 àpats.',
+    who: 'Adults que entrenen força o molt volum i volen guanyar o mantenir múscul (també en dèficit calòric).',
+    pros: ['Segons la ISSN és segura en persones sanes i ajuda a l\'adaptació a l\'entrenament'],
+    cons: ['No és recomanable si tens una malaltia renal', 'Més proteïna sense entrenar no fa més múscul'],
+    app: 'L\'objectiu de proteïna puja a 1,8 g/kg com a mínim.', src: ['issn'] },
+  dejuni: { em: '⏱️', name: 'Dejuni intermitent', ev: 'Moderada', minor: false,
+    what: 'Concentrar els àpats en una franja horària (per exemple 16:8) o fer dies de menys ingesta.',
+    who: 'Adults sans a qui els resulta més fàcil menjar en menys àpats.',
+    pros: ['Una metaanàlisi de 99 assaigs (BMJ 2025) mostra una pèrdua de pes semblant a la de reduir calories de manera contínua'],
+    cons: ['No és màgic: funciona perquè menges menys', 'No recomanat en menors, embaràs, diabetis amb medicació ni amb antecedents de TCA'],
+    app: 'El menú es redueix a 3 àpats (dinar, berenar i sopar).', src: ['bmjIF'] },
+  keto: { em: '🥓', name: 'Cetogènica (keto)', ev: 'Limitada a llarg termini', minor: false, avoid: true,
+    what: 'Molt baixa en hidrats (normalment < 50 g/dia) i molt alta en greix.',
+    who: 'Tractament mèdic específic (p. ex. alguns casos d\'epilèpsia) i sempre amb supervisió mèdica.',
+    pros: ['Pot fer baixar pes ràpid els primers mesos, en part per pèrdua d\'aigua'],
+    cons: ['A partir de 6-12 mesos no supera altres dietes', 'Pot pujar el colesterol LDL i és difícil de seguir', 'No apta per a menors ni embaràs'],
+    app: 'L\'app no genera menús cetogènics.', src: ['keto', 'ketoS'] },
+};
+const DIET_SHARES = { dejuni: { esmorzar: 0, mig_mati: 0, dinar: 0.45, berenar: 0.15, sopar: 0.40 } };
+const mealShare = k => { const d = (S().prefs || {}).dieta; const o = DIET_SHARES[d]; return o ? o[k] : MEALS.find(m => m.k === k).share; };
+
+/* --- qüestionari --- */
+const DQ = { open: false, step: 0, a: {} };
+const DQ_STEPS = [
+  { k: 'goal', q: 'Què és el que més t\'importa ara mateix?', multi: false, opts: [['general', '🍎', 'Menjar més sa en general'], ['pes', '⚖️', 'Perdre greix'], ['esport', '🏋️', 'Rendiment esportiu o guanyar múscul'], ['cor', '🫀', 'Cuidar el cor (tensió o colesterol)'], ['planeta', '🌍', 'Menjar menys carn / cuidar el planeta']] },
+  { k: 'meat', q: 'Què menges habitualment?', multi: false, opts: [['tot', '🍗', 'De tot'], ['poca', '🐟', 'Poca carn, però sí peix i ous'], ['veg', '🥚', 'Vegetarià (ous i làctics, sí)'], ['vega', '🌱', 'Vegà (res d\'origen animal)']] },
+  { k: 'cond', q: 'T\'han diagnosticat alguna d\'aquestes situacions?', sub: 'Pots marcar-ne més d\'una. Aquestes respostes només es fan servir per filtrar dietes poc adequades.', multi: true, opts: [['hta', '🩺', 'Tensió alta'], ['col', '🧪', 'Colesterol alt'], ['dm', '🍬', 'Diabetis o prediabetis'], ['emb', '🤰', 'Embaràs o lactància'], ['ren', '🫘', 'Malaltia renal'], ['tca', '🧠', 'Trastorn de la conducta alimentària (ara o abans)'], ['cap', '✅', 'Cap d\'aquestes']] },
+  { k: 'rhythm', q: 'Com t\'organitzes millor?', multi: false, opts: [['apats', '🍽️', '4-5 àpats al dia'], ['finestra', '⏱️', 'Menjar en una franja horària (p. ex. de 12 h a 20 h)'], ['igual', '🤷', 'M\'és igual']] },
+];
+function openDietQuiz() { DQ.open = true; DQ.step = 0; DQ.a = clone(S().dietQuiz || {}); if (!DQ.a.cond) DQ.a.cond = []; renderDietQuiz(); }
+function closeDietQuiz() { DQ.open = false; const el = $('#dq-ov'); if (el) el.remove(); }
+function renderDietQuiz() {
+  let ov = $('#dq-ov');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'dq-ov'; ov.className = 'ov'; document.body.appendChild(ov); ov.addEventListener('click', e => { if (e.target === ov) closeDietQuiz(); }); }
+  const st = DQ_STEPS[DQ.step], val = DQ.a[st.k];
+  const ok = st.multi ? (val || []).length > 0 : !!val;
+  ov.innerHTML = `<div class="modal" style="max-width:560px"><div class="mh"><div class="dots">${DQ_STEPS.map((_, i) => `<i class="${i <= DQ.step ? 'on' : ''}"></i>`).join('')}</div><button class="wz-close" data-act="dq-close">✕</button></div>
+    <div class="mb"><h2 class="wz-q">${st.q}</h2>${st.sub ? `<p class="wz-sub" style="margin-bottom:16px">${st.sub}</p>` : '<div style="height:12px"></div>'}
+      <div class="opts">${st.opts.map(([k, em, l], i) => { const on = st.multi ? (val || []).includes(k) : val === k; return `<button class="opt ${on ? 'on' : ''}" data-act="dq-pick" data-k="${k}" style="padding:13px 16px"><span class="em" style="font-size:22px">${em}</span><span style="flex:1"><b style="font-size:15px">${l}</b></span>${st.multi ? `<span class="key">${on ? '✓' : ''}</span>` : `<span class="key">${i + 1}</span>`}</button>`; }).join('')}</div></div>
+    <div class="mf">${DQ.step > 0 ? '<button class="btn ghost" data-act="dq-back">← Enrere</button>' : '<span></span>'}<button class="btn" data-act="dq-next" ${ok ? '' : 'disabled'}>${DQ.step === DQ_STEPS.length - 1 ? 'Veure la recomanació ✓' : 'Següent →'}</button></div></div>`;
+}
+function recommendDiets(a) {
+  const p = S().profile, m = metrics(); const age = +p.edat;
+  const minor = age < 18, cond = new Set(a.cond || []);
+  const score = Object.fromEntries(Object.keys(DIETS).map(k => [k, 0])); const why = Object.fromEntries(Object.keys(DIETS).map(k => [k, []]));
+  const excl = {};
+  const add = (k, v, reason) => { score[k] += v; if (reason) why[k].push(reason); };
+  const no = (k, reason) => { excl[k] = reason; };
+  add('mediterrania', 3, 'És el patró amb més evidència i la base de les guies de Catalunya i Espanya');
+  ({ general: () => { add('mediterrania', 2); add('flexitaria', 1); add('dash', 1); },
+     pes: () => { add('mediterrania', 2, 'Per perdre greix el més important és un lleuger dèficit calòric sostenible, no el tipus de dieta'); add('dash', 1); add('flexitaria', 1); add('dejuni', 1); },
+     esport: () => { add('proteica', 4, `Fas ${n(m.horesSetm || 0)} h d'esport a la setmana i vols rendir o guanyar múscul`); add('mediterrania', 1); },
+     cor: () => { add('dash', 3, 'Vols cuidar el cor'); add('mediterrania', 2, 'Redueix esdeveniments cardiovasculars'); add('portfolio', 1); },
+     planeta: () => { add('flexitaria', 4, 'Vols menjar menys carn'); add('vegetariana', 2); } })[a.goal]?.();
+  ({ poca: () => add('flexitaria', 3, 'Ja menges poca carn'), veg: () => add('vegetariana', 6, 'Ja segueixes una alimentació vegetariana'), vega: () => add('vegetariana', 6, 'Ja segueixes una alimentació vegana') })[a.meat]?.();
+  if (a.meat === 'veg' || a.meat === 'vega') { no('proteica', null); score.proteica -= 1; }
+  if (cond.has('hta')) add('dash', 4, 'Tens la tensió alta: la DASH està dissenyada per baixar-la');
+  if (cond.has('col')) { add('portfolio', 4, 'Tens el colesterol alt: la Portfolio el baixa de manera específica'); add('mediterrania', 1); }
+  if (cond.has('dm')) add('mediterrania', 2, 'En diabetis/prediabetis la mediterrània té molt bona evidència');
+  if (age >= 60) add('mind', 3, 'A partir dels 60 anys la MIND pot ajudar a cuidar la salut cerebral');
+  if (a.rhythm === 'finestra') add('dejuni', 3, 'Prefereixes menjar en una franja horària');
+  if (+m.horesSetm >= 3 && a.goal !== 'esport') add('proteica', 1);
+  // exclusions per seguretat
+  no('keto', 'Evidència limitada a llarg termini i possibles riscos; només amb supervisió mèdica');
+  if (minor) no('dejuni', 'No recomanat per a menors d\'edat');
+  if (cond.has('emb')) { no('dejuni', 'No recomanat durant l\'embaràs o la lactància'); }
+  if (cond.has('dm')) { no('dejuni', 'Amb diabetis, el dejuni només s\'ha de fer amb supervisió mèdica (risc d\'hipoglucèmia)'); }
+  if (cond.has('ren')) { no('proteica', 'Amb malaltia renal cal ajustar la proteïna amb el metge'); }
+  if (cond.has('tca')) { no('dejuni', 'Amb antecedents de TCA, restringir horaris pot ser perjudicial'); }
+  const ranked = Object.keys(DIETS).filter(k => !(k in excl) || excl[k] === null).filter(k => !DIETS[k].avoid).sort((x, y) => score[y] - score[x]);
+  return { ranked: ranked.filter(k => !(excl[k])), excl, why, minor, cond, tca: cond.has('tca') };
+}
+function dietCard(k, opts = {}) {
+  const d = DIETS[k]; const active = (S().prefs || {}).dieta === k || (!(S().prefs || {}).dieta && k === 'mediterrania' && opts.showActive);
+  const evCls = /^Alta/.test(d.ev) ? 'b-green' : /Moderada/.test(d.ev) ? 'b-orange' : 'b-red';
+  return `<details class="panel" ${opts.open ? 'open' : ''} style="${opts.top ? 'border:2px solid var(--brand)' : ''}">
+    <summary style="display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none"><span style="font-size:30px">${d.em}</span><div style="flex:1"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><b class="h" style="font-size:17px">${d.name}</b>${opts.top ? '<span class="badge b-green"><i></i>Recomanada per a tu</span>' : ''}${active ? '<span class="badge b-info"><i></i>Activa al menú</span>' : ''}</div>
+      <div class="small muted" style="margin-top:3px">Evidència: <span class="badge ${evCls}" style="padding:1px 8px"><i></i>${d.ev}</span></div></div><span class="faint">▾</span></summary>
+    <p style="font-size:14px;line-height:1.55;margin:14px 0 6px">${d.what}</p>
+    <p class="small muted" style="margin:0 0 10px"><b>Per a qui:</b> ${d.who}</p>
+    ${opts.why && opts.why.length ? `<div class="callout mint" style="margin-bottom:10px">💡 ${opts.why.map(esc).join(' · ')}</div>` : ''}
+    <div class="grid g2" style="gap:10px"><div><div class="small" style="font-weight:700;color:#15803D;margin-bottom:4px">A favor</div>${d.pros.map(x => `<div class="small" style="margin:4px 0">✓ ${x}</div>`).join('')}</div>
+      <div><div class="small" style="font-weight:700;color:#B45309;margin-bottom:4px">Tingues en compte</div>${d.cons.map(x => `<div class="small" style="margin:4px 0">⚠ ${x}</div>`).join('')}</div></div>
+    <div class="small muted" style="margin-top:12px"><b>A l'app:</b> ${d.app}</div>
+    <div class="small" style="margin-top:10px">${d.src.map(s => `<a href="${SRC[s][1]}" target="_blank" rel="noopener" style="display:block;margin:3px 0">📚 ${SRC[s][0]}</a>`).join('')}</div>
+    ${!d.avoid && !(k === 'dejuni' && +S().profile.edat < 18) ? `<div style="margin-top:14px">${active && (S().prefs || {}).dieta ? '<button class="btn sm ghost" data-act="diet-style" data-k="">Tornar a la mediterrània per defecte</button>' : `<button class="btn sm" data-act="diet-style" data-k="${k}">Aplicar al meu menú</button>`}</div>` : ''}
+  </details>`;
+}
+function dietTypesHTML() {
+  const a = S().dietQuiz; const minor = +S().profile.edat < 18;
+  const disc = `<div class="callout amber" style="margin-bottom:16px">⚕️ ${DISCLAIMER}</div>`;
+  let rec = '';
+  if (a) {
+    const r = recommendDiets(a);
+    const top = r.ranked[0], alt = r.ranked.slice(1, 3);
+    rec = `<div class="panel" style="background:var(--mint-50);border-color:var(--mint-100)"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><p class="sec-label" style="margin:0">La teva recomanació</p><button class="link" data-act="dq-open">Tornar a fer el qüestionari</button></div>
+      ${r.minor ? `<p class="small muted" style="margin:10px 0 0">Com que tens menys de 18 anys, si el teu objectiu és perdre pes l'app limita el dèficit a un màxim de 300 kcal/dia.</p>` : ''}
+      ${r.tca ? `<div class="callout amber" style="margin-top:12px">💬 Has indicat antecedents de trastorn de la conducta alimentària. Et recomanem fer qualsevol canvi amb el teu equip de salut i no fixar-te en calories ni en el pes. Si en algun moment ho necessites, parla-ho amb el teu metge/essa de capçalera o amb la teva psicòloga/psicòleg.</div>` : ''}
+      <div style="margin-top:14px">${dietCard(top, { top: true, open: true, why: r.why[top] })}</div>
+      ${alt.length ? `<p class="small muted" style="margin:16px 0 8px;font-weight:600">També et podrien encaixar:</p><div class="grid">${alt.map(k => dietCard(k, { why: r.why[k] })).join('')}</div>` : ''}
+      ${Object.keys(r.excl).filter(k => r.excl[k]).length ? `<p class="small muted" style="margin:16px 0 8px;font-weight:600">No te les recomanem ara:</p>${Object.entries(r.excl).filter(([, v]) => v).map(([k, v]) => `<div class="small" style="margin:6px 0">${DIETS[k].em} <b>${DIETS[k].name}</b> — <span class="muted">${v}</span></div>`).join('')}` : ''}
+    </div>`;
+  } else {
+    rec = `<div class="panel" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;background:var(--mint-50);border-color:var(--mint-100)"><div style="font-size:42px">🧭</div><div style="flex:1;min-width:220px"><b class="h" style="font-size:19px">Quina manera de menjar t'encaixa més?</b><p class="small muted" style="margin:6px 0 0">4 preguntes ràpides. Combinem les teves respostes amb el teu perfil (edat, esport i objectiu) i et proposem un patró basat en l'evidència científica.</p></div><button class="btn" data-act="dq-open">Començar →</button></div>`;
+  }
+  return disc + rec + `<h3 style="font-size:19px;margin:26px 0 12px">Catàleg de dietes</h3><div class="grid">${Object.keys(DIETS).map(k => dietCard(k, { showActive: true })).join('')}</div>
+    <p class="small faint" style="margin-top:16px">${DISCLAIMER}</p>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  switch (b.dataset.act) {
+    case 'dq-open': openDietQuiz(); break;
+    case 'dq-close': closeDietQuiz(); break;
+    case 'dq-back': DQ.step--; renderDietQuiz(); break;
+    case 'dq-pick': {
+      const st = DQ_STEPS[DQ.step], k = b.dataset.k;
+      if (st.multi) { let v = DQ.a[st.k] || []; if (k === 'cap') v = v.includes('cap') ? [] : ['cap']; else { v = v.filter(x => x !== 'cap'); v = v.includes(k) ? v.filter(x => x !== k) : [...v, k]; } DQ.a[st.k] = v; renderDietQuiz(); }
+      else { DQ.a[st.k] = k; renderDietQuiz(); setTimeout(() => { if (DQ.open && DQ_STEPS[DQ.step].k === st.k) { if (DQ.step < DQ_STEPS.length - 1) { DQ.step++; renderDietQuiz(); } } }, 250); }
+      break;
+    }
+    case 'dq-next': if (DQ.step < DQ_STEPS.length - 1) { DQ.step++; renderDietQuiz(); } else { S().dietQuiz = clone(DQ.a); Store.save(); closeDietQuiz(); ui.ftab = 'dieta'; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); } break;
+    case 'diet-style': {
+      const k = b.dataset.k; const p = S().prefs || (S().prefs = {});
+      p.dieta = k || null;
+      if (k === 'vegetariana') { p.veg = true; if ((S().dietQuiz || {}).meat === 'vega') { p.lact = true; p.vegan = true; } }
+      else { if (p.vegan) { p.vegan = false; p.lact = false; } }
+      S().plan = null; Store.save(); render();
+      toast(k ? `${DIETS[k].name} aplicada al menú` : 'Tornem a la dieta mediterrània', { label: 'Veure menú', fn: () => { ui.ftab = 'menu'; render(); } });
+      break;
+    }
+  }
+});
+document.addEventListener('keydown', e => {
+  if (!DQ.open) return;
+  if (e.key === 'Escape') { closeDietQuiz(); e.stopImmediatePropagation(); }
+  if (/^[1-9]$/.test(e.key)) { const o = document.querySelectorAll('#dq-ov .opt')[+e.key - 1]; if (o) o.click(); }
+  if (e.key === 'Enter') { const n2 = $('#dq-ov [data-act=dq-next]'); if (n2 && !n2.disabled) { e.preventDefault(); n2.click(); } }
+}, true);
+
+/* =========================================================
+   ESTUDI — registre de participants i enviament de dades al centre
+   (Google Sheets via Apps Script; configuració a config.js)
+   ========================================================= */
+const CFG = Object.assign({ endpoint: '', estudi: false, projecte: 'Health Trainer', centre: 'el centre', responsable: '', contacte: '', conservacio: 'fins al final de l\'estudi' }, window.HT_CONFIG || {});
+const consentText = () => `Accepto participar en l'estudi ${CFG.projecte} (${CFG.centre}). Responsables: ${CFG.responsable}. Les dades que introdueixi (correu, edat, sexe, mesures corporals, activitat física, alimentació i respostes dels qüestionaris, incloses dades relacionades amb la salut) només s'utilitzaran per a aquest estudi, s'analitzaran de manera codificada, sense el meu nom ni el meu correu, i es conservaran ${CFG.conservacio}. Puc consultar, corregir o esborrar les meves dades en qualsevol moment des de l'app o escrivint a ${CFG.contacte}.`;
+async function pinHash(email, pin) {
+  const txt = `ht:${String(email).trim().toLowerCase()}:${pin}`;
+  try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+  catch (e) { let h = 0; for (const c of txt) h = (h * 31 + c.charCodeAt(0)) | 0; return 'x' + (h >>> 0).toString(16); }
+}
+const genCode = () => 'HT-' + Array.from({ length: 6 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('');
+const hashStr = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + ':' + s.length; };
+const rr = (v, d = 1) => v == null || v === '' || isNaN(v) ? '' : Math.round(v * 10 ** d) / 10 ** d;
+const isEmail = s => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(s || '').trim());
+
+function studyPayload(isNew) {
+  const st = S(), part = st.participant, p = st.profile, m = p ? metrics() : null;
+  const body = { action: 'sync', isNew: !!isNew, id: part.id, email: part.email, pinHash: part.pinHash, nom: p?.nom || '', registeredAt: part.registeredAt, consentAt: part.consentAt, consentText: part.consentText };
+  if (p && m && m.imc) {
+    const sp = (m.esports || []).map(e => `${SPORT[e.sport]?.label} ${e.dies}x${e.minuts}min ${e.intensitat}`).join('; ');
+    body.dades = [p.sexe, p.edat, p.alcada, p.complexio, p.activitat, p.objectiu, p.pes_inicial ?? '', p.data_inicial ?? '', rr(currentWeight()), p.pes_objectiu ?? '', p.data_objectiu ?? '', currentWaist() ?? '',
+      rr(m.imc.value, 2), rr(m.greix?.value), m.rca ? rr(m.rca.value, 3) : '', rr(m.mb, 0), rr(m.det, 0), rr(m.kcal, 0), rr(m.prot?.value, 0), rr(m.horesSetm), rr(m.espSetm, 0), sp,
+      (st.prefs || {}).dieta || 'mediterrania', st.entries.length, Object.keys(st.food).filter(d => st.food[d].length).length];
+  }
+  body.registres = sortedEntries().map(e => { const em = entryMetrics(e); return [e.date, e.pes, e.cintura || '', rr(em.imc, 2), rr(em.greix), em.rca ? rr(em.rca, 3) : '', e.sens?.energia || '', e.sens?.gana || '', e.sens?.son || '', e.obs || '']; });
+  const sig = hashStr(JSON.stringify(st.food)); body._foodSig = sig;
+  if (isNew || sig !== part.foodSig) {
+    body.aliments = [];
+    Object.keys(st.food).sort().forEach(d => st.food[d].forEach(it => { const r = FOODS[it[1]]; if (!r) return; const nn = nut(it[1], it[2]); body.aliments.push([d, MEALS[it[0]]?.label || '', r[0], it[2], rr(nn.kcal, 0), rr(nn.p), rr(nn.h), rr(nn.g), rr(nn.fib), rr(nn.na, 0)]); }));
+  }
+  if (st.dietQuiz) { const q = st.dietQuiz; let rec = ''; try { rec = recommendDiets(q).ranked[0] || ''; } catch (e) {} body.questionari = [q.goal || '', q.meat || '', (q.cond || []).join(', '), q.rhythm || '', rec, (st.prefs || {}).dieta || '']; }
+  body.state = JSON.stringify(st);
+  return body;
+}
+const Sync = {
+  status: 'off', timer: null, busy: false, again: false,
+  enabled() { return !!(CFG.endpoint && S().participant); },
+  schedule(delay = 1500) {
+    if (!this.enabled()) { this.status = CFG.endpoint ? 'off' : 'demo'; return; }
+    this.status = 'pending'; clearTimeout(this.timer); this.timer = setTimeout(() => this.push(), delay);
+  },
+  async post(body) { const r = await fetch(CFG.endpoint, { method: 'POST', body: JSON.stringify(body) }); return r.json(); },
+  async push() {
+    if (!this.enabled()) return;
+    if (this.busy) { this.again = true; return; }
+    this.busy = true; const part = S().participant;
+    try {
+      const body = studyPayload(!part.synced); const j = await this.post(body);
+      if (j.ok) { if (j.id) part.id = j.id; part.synced = true; part.lastSync = j.at || new Date().toISOString(); part.foodSig = body._foodSig; this.status = 'ok'; Store.saveLocal(); }
+      else if (j.error === 'exists') { this.status = 'exists'; openStudyLogin(part.email, 'Aquest correu ja està registrat a l\'estudi. Entra amb el teu PIN per recuperar les teves dades.'); }
+      else if (j.error === 'pin' || j.error === 'locked') this.status = 'auth';
+      else this.status = 'error';
+    } catch (e) { this.status = 'error'; }
+    this.busy = false; renderSync();
+    if (this.again) { this.again = false; this.schedule(500); }
+  },
+};
+window.addEventListener('online', () => Sync.schedule(300));
+function syncLabel() {
+  const part = S().participant;
+  if (CFG.estudi && part) {
+    if (!CFG.endpoint) return ['', 'Mode demostració · dades en aquest navegador'];
+    return { ok: ['cloud', 'Dades enviades al centre ✓'], pending: ['', 'Enviant dades…'], error: ['', 'Sense connexió · es reintentarà'], auth: ['', 'PIN incorrecte: torna a entrar'], exists: ['', 'Cal recuperar el compte'], off: ['', 'Pendent d\'enviar'] }[Sync.status] || ['', 'Pendent d\'enviar'];
+  }
+  return Store.mode === 'cloud' ? ['cloud', 'Desat al teu compte'] : ['', 'Desat en aquest navegador'];
+}
+
+/* --- recuperar dades (email + PIN) --- */
+const SL = { email: '', pin: '', msg: '', err: '', busy: false };
+function openStudyLogin(email = '', msg = '') {
+  Object.assign(SL, { email, pin: '', msg, err: '', busy: false });
+  let ov = $('#sl-ov');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'sl-ov'; ov.className = 'ov'; document.body.appendChild(ov); ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); }); }
+  renderStudyLogin();
+}
+function renderStudyLogin() {
+  const ov = $('#sl-ov'); if (!ov) return;
+  ov.innerHTML = `<div class="modal" style="max-width:460px"><div class="mh"><div style="flex:1"></div><button class="wz-close" data-act="sl-close">✕</button></div>
+    <div class="mb"><h2 class="wz-q" style="font-size:24px">Recuperar les meves dades</h2>
+      ${SL.msg ? `<div class="callout mint" style="margin:6px 0 14px">${esc(SL.msg)}</div>` : '<p class="wz-sub" style="margin-bottom:14px">Entra amb el correu i el PIN que vas fer servir en registrar-te.</p>'}
+      ${!CFG.endpoint ? '<div class="callout amber" style="margin-bottom:12px">Aquesta versió és una demostració i no està connectada a cap centre.</div>' : ''}
+      <label class="small muted">Correu electrònic</label><input id="slemail" class="txt" type="email" autocomplete="email" value="${esc(SL.email)}" style="margin:6px 0 14px">
+      <label class="small muted">PIN de 4 xifres</label><input id="slpin" class="txt" type="password" inputmode="numeric" maxlength="4" value="" placeholder="••••" style="margin:6px 0 6px;letter-spacing:.4em;max-width:200px">
+      ${SL.err ? `<div class="feedback fb-red" style="margin-top:12px">${esc(SL.err)}</div>` : ''}</div>
+    <div class="mf"><span></span><button class="btn" id="slgo" data-act="sl-go" ${SL.busy || !CFG.endpoint ? 'disabled' : ''}>${SL.busy ? 'Entrant…' : 'Entrar'}</button></div></div>`;
+  const f = SL.email ? $('#slpin') : $('#slemail'); if (f) f.focus();
+}
+async function doStudyLogin() {
+  SL.email = $('#slemail').value.trim().toLowerCase(); SL.pin = $('#slpin').value.trim();
+  if (!isEmail(SL.email) || !/^\d{4}$/.test(SL.pin)) { SL.err = 'Revisa el correu i el PIN (4 xifres).'; renderStudyLogin(); return; }
+  SL.busy = true; SL.err = ''; renderStudyLogin();
+  try {
+    const ph = await pinHash(SL.email, SL.pin);
+    const j = await Sync.post({ action: 'load', email: SL.email, pinHash: ph });
+    if (!j.ok) { SL.busy = false; SL.err = { pin: 'PIN incorrecte.', locked: 'Massa intents fallits. Torna-ho a provar d\'aquí a una hora.', notfound: 'Aquest correu no està registrat a l\'estudi.' }[j.error] || 'No s\'ha pogut connectar amb el centre.'; renderStudyLogin(); return; }
+    let st = null; try { st = j.state ? JSON.parse(j.state) : null; } catch (e) {}
+    Store.state = ensureState(st && st.v === 2 ? st : EMPTY_STATE());
+    S().participant = Object.assign({}, S().participant || {}, { id: j.id, email: SL.email, pinHash: ph, synced: true });
+    if (!S().participant.consentAt) S().participant.consentAt = new Date().toISOString();
+    Store.saveLocal(); Sync.status = 'ok'; $('#sl-ov')?.remove(); if (WZ.open) closeWizard();
+    location.hash = '#inici'; render(); toast('Dades recuperades ✓');
+  } catch (e) { SL.busy = false; SL.err = 'No s\'ha pogut connectar amb el centre. Comprova la connexió.'; renderStudyLogin(); }
+}
+function studyPanelHTML() {
+  if (!CFG.estudi) return '';
+  const part = S().participant;
+  if (!part) return `<div class="panel" style="margin-top:16px"><h3 style="font-size:18px;margin-bottom:6px">Participació a l'estudi</h3><p class="small muted" style="margin:0 0 12px">Aquest dispositiu no està vinculat a cap participant.</p><button class="btn sm" data-act="study-login">Recuperar les meves dades</button></div>`;
+  const [cls, lab] = syncLabel();
+  return `<div class="panel" style="margin-top:16px"><h3 style="font-size:18px;margin-bottom:10px">Participació a l'estudi</h3>
+    ${[['Codi de participant', `<span class="num">${esc(part.id)}</span>`], ['Correu', esc(part.email)], ['Consentiment', part.consentAt ? fmtDate(part.consentAt.slice(0, 10)) : '—'], ['Estat', `<span class="sync ${cls}" style="margin:0;display:inline-flex"><i></i>${lab}</span>`], ...(part.lastSync ? [['Últim enviament', new Date(part.lastSync).toLocaleString('ca-ES', { dateStyle: 'short', timeStyle: 'short' })]] : [])]
+      .map(([k, v]) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px"><span class="muted">${k}</span><b style="font-weight:600;text-align:right">${v}</b></div>`).join('')}
+    <details style="margin-top:10px"><summary class="link" style="cursor:pointer">Veure el text del consentiment</summary><p class="small muted" style="line-height:1.5">${esc(part.consentText || consentText())}</p></details>
+    <div class="confirm" style="margin-top:14px">${ui.confirmWithdraw
+      ? `<span class="small" style="color:#B91C1C;font-weight:600">S'esborraran totes les teves dades del centre i d'aquest dispositiu. Segur?</span><button class="btn sm danger" data-act="study-withdraw">Sí, retira'm de l'estudi</button><button class="btn sm ghost" data-act="cancel-withdraw">Cancel·la</button>`
+      : `<button class="btn sm" data-act="study-sync" ${CFG.endpoint ? '' : 'disabled'}>Enviar ara</button><button class="btn sm ghost" data-act="study-logout">Tancar sessió en aquest dispositiu</button><button class="btn sm danger" data-act="ask-withdraw">Retirar-me de l'estudi</button>`}</div></div>`;
+}
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  switch (b.dataset.act) {
+    case 'study-login': openStudyLogin(WZ.draft?.email || ''); break;
+    case 'sl-close': $('#sl-ov')?.remove(); break;
+    case 'sl-go': doStudyLogin(); break;
+    case 'study-sync': Sync.schedule(0); renderSync(); render(); break;
+    case 'ask-withdraw': ui.confirmWithdraw = true; render(); break;
+    case 'cancel-withdraw': ui.confirmWithdraw = false; render(); break;
+    case 'study-logout': {
+      if (Sync.enabled() && Sync.status !== 'ok') { try { await Sync.push(); } catch (x) {} }
+      if (Sync.enabled() && Sync.status !== 'ok') { toast('Encara no s\'han pogut enviar les dades. Connecta\'t a internet i torna-ho a provar.'); break; }
+      Store.state = EMPTY_STATE(); Store.saveLocal(); location.hash = '#inici'; render(); toast('Sessió tancada en aquest dispositiu');
+      break;
+    }
+    case 'study-withdraw': {
+      const part = S().participant;
+      if (CFG.endpoint && part) {
+        try { const j = await Sync.post({ action: 'delete', email: part.email, pinHash: part.pinHash }); if (!j.ok) { toast('No s\'han pogut esborrar les dades del centre. Torna-ho a provar.'); break; } }
+        catch (x) { toast('Sense connexió: no s\'han pogut esborrar les dades del centre.'); break; }
+      }
+      ui.confirmWithdraw = false; Store.state = EMPTY_STATE(); Store.saveLocal(); location.hash = '#inici'; render(); toast('T\'has retirat de l\'estudi i les teves dades s\'han esborrat');
+      break;
+    }
+  }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (WZ.open && t.id === 'wzpin') { WZ.draft.pin = t.value.replace(/\D/g, '').slice(0, 4); t.value = WZ.draft.pin; updateNext(); }
+  if (t.id === 'slpin') t.value = t.value.replace(/\D/g, '').slice(0, 4);
+});
+document.addEventListener('change', e => { if (WZ.open && e.target.id === 'wzcons') { WZ.draft.consent = e.target.checked; updateNext(); } });
+document.addEventListener('keydown', e => { if ($('#sl-ov') && e.key === 'Enter') { e.preventDefault(); doStudyLogin(); } if ($('#sl-ov') && e.key === 'Escape') $('#sl-ov').remove(); }, true);
+
+/* ---------- arrencada ---------- */
+Store.loadLocal();
+render();
+Store.connect();
+if (S().participant && (!S().participant.synced || !S().participant.lastSync)) Sync.schedule(2000);
+</script>
+</body>
+</html>
