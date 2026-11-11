@@ -9,8 +9,8 @@ window.HT_CONFIG = {
 
   // Textos del consentiment (els veu cada participant abans de començar).
   projecte: 'Treball de Recerca «Health Trainer»',
-  centre: '[Nom de l\'institut]',
-  responsable: '[Nom de l\'alumna] (alumna de Batxillerat) i [nom del tutor/a] (tutor/a del TR)',
+  centre: 'Institut Camí de Mar, Calafell',
+  responsable: 'Alba Peralta Vila (alumna de Batxillerat) i Víctor Pérez Puchades (tutor del TR)',
   contacte: '[correu de contacte del centre o del tutor/a]',
   conservacio: 'fins a la presentació del Treball de Recerca, i com a màxim fins al 30 de juny de 2027',
 };
